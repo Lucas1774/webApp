@@ -5,6 +5,7 @@ import SecretSanta from "./components/SecretSanta/SecretSanta";
 import ParsedAbout from "./components/ParsedAbout/ParsedAbout";
 import Sudoku from "./components/Sudoku/Sudoku";
 import RubikTimer from "./components/RubikTimer/RubikTimer";
+import Shopping from "./components/Shopping/Shopping";
 import "./App.css"
 
 const App = () => {
@@ -13,20 +14,23 @@ const App = () => {
       <ParsedAbout />
       <br></br>
     </div>
-      <Row>
-        <Col>
-          <Calculator />
-        </Col>
-        <Col>
-          <Sudoku />
-        </Col>
-        <Col>
-          <SecretSanta />
-        </Col>
-        <Col>
-          <RubikTimer />
-        </Col>
-      </Row>
+    <Row>
+      <Col>
+        <Shopping />
+      </Col>
+      <Col>
+        <RubikTimer />
+      </Col>
+      <Col>
+        <Sudoku />
+      </Col>
+      <Col>
+        <SecretSanta />
+      </Col>
+      <Col>
+        <Calculator />
+      </Col>
+    </Row>
     </>
   );
 }
