@@ -1,5 +1,6 @@
 package com.lucas.server.components.connection;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -8,6 +9,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.web.bind.annotation.*;
 
 import com.lucas.server.components.calculator.Solver;
+import com.lucas.server.components.model.ShoppingItem;
 import com.lucas.server.components.sudoku.Generator;
 import com.lucas.server.components.sudoku.Sudoku;
 
@@ -142,5 +144,16 @@ public class Controller {
                 }
             }
         }
+    }
+
+    @GetMapping("/shopping")
+    public List<ShoppingItem> getShoppingItems() {
+        // TODO:
+        List<ShoppingItem> res = new ArrayList<>();
+        res.add(new ShoppingItem(0, "Apples", 7));
+        res.add(new ShoppingItem(1, "Bread", 3));
+        res.add(new ShoppingItem(2, "Milk", 2));
+        return res;
+        // return dao.getShoppingItems();
     }
 }

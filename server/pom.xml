@@ -60,6 +60,10 @@
 			<artifactId>mssql-jdbc</artifactId>
 			<version>12.6.3.jre11</version>
 		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
 	</dependencies>
 
 	<profiles>
