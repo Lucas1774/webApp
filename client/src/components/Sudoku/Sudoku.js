@@ -5,6 +5,7 @@ import FileImporter from "../FileImporter";
 import SudokuGrid from "./SudokuGrid";
 import "./Sudoku.css";
 import Spinner from "../Spinner";
+import { TIMEOUT_DELAY } from "../../constants";
 
 const Sudoku = () => {
     const [sudoku, setSudoku] = useState("");
@@ -90,7 +91,7 @@ const Sudoku = () => {
                     setIsUploadResponseVisible(true);
                     setTimeout(() => {
                         restoreDefaults();
-                    }, 1000);
+                    }, TIMEOUT_DELAY);
                 }
             })
             .catch(error => {
@@ -116,7 +117,7 @@ const Sudoku = () => {
                     setIsUploadResponseVisible(true);
                     setTimeout(() => {
                         restoreDefaults();
-                    }, 1000);
+                    }, TIMEOUT_DELAY);
                 }
             })
             .catch(error => {
@@ -171,7 +172,7 @@ const Sudoku = () => {
                     setIsUploadResponseVisible(true);
                     setTimeout(() => {
                         restoreDefaults();
-                    }, 1000);
+                    }, TIMEOUT_DELAY);
                 }
             })
             .catch(error => {
@@ -272,7 +273,7 @@ const Sudoku = () => {
                 setIsUploadResponseVisible(true);
                 setTimeout(() => {
                     restoreDefaults();
-                }, 1000);
+                }, TIMEOUT_DELAY);
             })
             .catch(error => {
                 ;

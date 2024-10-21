@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Form, Button } from "react-bootstrap";
+import { TIMEOUT_DELAY } from "../../constants";
 import "./SecretSanta.css";
 
 const SecretSanta = () => {
@@ -25,7 +26,7 @@ const SecretSanta = () => {
         event.preventDefault();
         hideEverything();
         setIsSavingVisible(true);
-        let delay = 1000;
+        let delay = TIMEOUT_DELAY;
         if (input !== "" && !participants.includes(input)) {
             setParticipants([...participants, input]);
             delay = 0;
@@ -48,7 +49,7 @@ const SecretSanta = () => {
                 setIsCalculatingVisible(false);
                 setIsChosenVisible(true);
                 setIsRestartButtonVisible(true);
-            }, 1000);
+            }, TIMEOUT_DELAY);
         } else {
             setIsNoParticipantsVisible(true);
             setTimeout(() => {
@@ -58,7 +59,7 @@ const SecretSanta = () => {
                 setIsRestartButtonVisible(true);
                 setIsParticipantListVisible(true);
                 setIsNoParticipantsVisible(false);
-            }, 1000);
+            }, TIMEOUT_DELAY);
         }
     };
 
@@ -74,7 +75,7 @@ const SecretSanta = () => {
             } else {
                 restoreDefaults();
             }
-        }, 2000);
+        }, TIMEOUT_DELAY * 2);
     };
 
     const renderForm = () => {

@@ -216,7 +216,7 @@ const RubikTimer = () => {
                     if (isAndroid) {
                         setFocusFormLabel("start");
                     }
-                }, 1000)
+                }, constants.TIMEOUT_DELAY)
                 return;
             }
             hideEverything();

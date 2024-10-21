@@ -19,3 +19,4 @@ export const MULTI_UNPROCESSED = "MULTI_UNPROCESSED";
 export const EMPTY_TIMER = "-:--:---";
 export const DNF = "DNF";
 export const TIMER_REFRESH_RATE = 50;
+export const TIMEOUT_DELAY = 1000;
