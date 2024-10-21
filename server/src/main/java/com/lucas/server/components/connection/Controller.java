@@ -5,27 +5,88 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.lucas.server.components.calculator.Solver;
 import com.lucas.server.components.model.ShoppingItem;
+import com.lucas.server.components.security.JwtUtil;
 import com.lucas.server.components.sudoku.Generator;
 import com.lucas.server.components.sudoku.Sudoku;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api")
 public class Controller {
+    private JwtUtil jwtUtil;
     private DAO dao;
     private Generator generator;
     private Solver solver;
     private SudokuParser sudokuParser;
+    private boolean secure;
 
-    public Controller(DAO dao, Generator generator, Solver solver, SudokuParser sudokuParser) {
+    public Controller(JwtUtil jwtUtil, DAO dao, Generator generator, Solver solver, SudokuParser sudokuParser,
+            @Value("${spring.security.jwt.secure}") boolean secure) {
         this.dao = dao;
         this.generator = generator;
         this.solver = solver;
         this.sudokuParser = sudokuParser;
+        this.jwtUtil = jwtUtil;
+        this.secure = secure;
+    }
+
+    @GetMapping("/check-auth")
+    public ResponseEntity<String> checkAuth(HttpServletRequest request) {
+        return this.retrieveAuthCookie(request.getCookies())
+                ? ResponseEntity.ok("Authenticated")
+                : ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not Authenticated");
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<String> handleLogin(@RequestBody String password, HttpServletResponse response) {
+        // TODO:
+        // if (dao.getPassword().equals(password) ? jwtUtil.generateToken() : "-1") {}
+        String correctPassowrd = "test";
+        if (correctPassowrd.equals(password.replace("\"", ""))) {
+            String token = correctPassowrd.equals(password.replace("\"", "")) ? jwtUtil.generateToken() : "-1";
+            Cookie cookie = new Cookie("authToken", token);
+            cookie.setHttpOnly(true);
+            cookie.setPath("/");
+            cookie.setMaxAge(31536000);
+            cookie.setSecure(this.secure);
+            response.addCookie(cookie);
+            return ResponseEntity.ok("Login successful");
+        } else {
+            return ResponseEntity.ok("-1");
+        }
+    }
+
+    @GetMapping("/shopping")
+    public List<ShoppingItem> getShoppingItems(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        String authToken = null;
+
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("authToken".equals(cookie.getName()) && jwtUtil.isTokenValid(cookie.getValue())) {
+                    authToken = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        // TODO:
+        List<ShoppingItem> res = new ArrayList<>();
+        res.add(new ShoppingItem(0, "Apples", 7));
+        res.add(new ShoppingItem(1, "Bread", 3));
+        res.add(new ShoppingItem(2, "Milk", 2));
+        return res;
+        // return dao.getShoppingItems();
     }
 
     @PostMapping("/ans")
@@ -146,14 +207,14 @@ public class Controller {
         }
     }
 
-    @GetMapping("/shopping")
-    public List<ShoppingItem> getShoppingItems() {
-        // TODO:
-        List<ShoppingItem> res = new ArrayList<>();
-        res.add(new ShoppingItem(0, "Apples", 7));
-        res.add(new ShoppingItem(1, "Bread", 3));
-        res.add(new ShoppingItem(2, "Milk", 2));
-        return res;
-        // return dao.getShoppingItems();
+    private Boolean retrieveAuthCookie(Cookie[] cookies) {
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("authToken".equals(cookie.getName()) && jwtUtil.isTokenValid(cookie.getValue())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

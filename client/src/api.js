@@ -12,7 +12,8 @@ const config = {
   headers: {
     "Authorization": "Basic " + btoa(`${auth.username}:${auth.password}`),
     "Content-Type": "application/json"
-  }
+  },
+  withCredentials: true
 };
 
 export const post = (url, data) => {

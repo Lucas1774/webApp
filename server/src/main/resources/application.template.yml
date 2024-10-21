@@ -3,6 +3,9 @@ spring:
     name: web app
   IPAddress: <address1>, <address2>
   security:
+    jwt:
+      secret: <secret>
+      secure: <boolean>
     user:
       name: <username>
       password: <password>
