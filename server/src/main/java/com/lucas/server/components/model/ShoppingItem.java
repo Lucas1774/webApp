@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class ShoppingItem {
-    private long id;
+    private int id;
     private String name;
     private int quantity;
 }

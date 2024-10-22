@@ -1,6 +1,5 @@
 package com.lucas.server.components.connection;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -50,11 +49,14 @@ public class Controller {
 
     @PostMapping("/login")
     public ResponseEntity<String> handleLogin(@RequestBody String password, HttpServletResponse response) {
-        // TODO:
-        // if (dao.getPassword().equals(password) ? jwtUtil.generateToken() : "-1") {}
-        String correctPassowrd = "test";
-        if (correctPassowrd.equals(password.replace("\"", ""))) {
-            String token = correctPassowrd.equals(password.replace("\"", "")) ? jwtUtil.generateToken() : "-1";
+        String correctPassword;
+        try {
+            correctPassword = dao.getPassword("admin");
+        } catch (DataAccessException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+        if (correctPassword.equals(password.replace("\"", ""))) {
+            String token = correctPassword.equals(password.replace("\"", "")) ? jwtUtil.generateToken() : "-1";
             Cookie cookie = new Cookie("authToken", token);
             cookie.setHttpOnly(true);
             cookie.setPath("/");
@@ -69,14 +71,18 @@ public class Controller {
 
     @GetMapping("/shopping")
     public List<ShoppingItem> getShoppingItems(HttpServletRequest request) {
-        String authToken = this.retrieveAuthCookie(request.getCookies());
-        // TODO:
-        List<ShoppingItem> res = new ArrayList<>();
-        res.add(new ShoppingItem(0, "Apples", 7));
-        res.add(new ShoppingItem(1, "Bread", 3));
-        res.add(new ShoppingItem(2, "Milk", 2));
-        return res;
-        // return dao.getShoppingItems();
+        return this.retrieveAuthCookie(request.getCookies()) == null ? dao.getShoppingItems("default")
+                : dao.getShoppingItems("admin");
+    }
+
+    @PostMapping("/new-aliment")
+    public String postAliment(@RequestBody String item) {
+        try {
+            dao.insertAliment(item.replace("\"", ""));
+            return "1";
+        } catch (DataAccessException e) {
+            return e.getMessage();
+        }
     }
 
     @PostMapping("/ans")
