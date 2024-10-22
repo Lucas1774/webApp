@@ -10,7 +10,7 @@ const Shopping = () => {
     const [tableData, setTableData] = useState(null);
     const [message, setMessage] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [isInLoginFormVisible, setIsInLoginFormVisible] = useState(false);
+    const [isLoginFormVisible, setIsLoginFormVisible] = useState(false);
 
     const getData = async () => {
         setIsLoading(true);
@@ -32,7 +32,7 @@ const Shopping = () => {
                 await getData();
             } catch (error) {
                 if (error.response && error.response.status === 401) {
-                    setIsInLoginFormVisible(true);
+                    setIsLoginFormVisible(true);
                 } else {
                     alert("Error checking authentication:", error.message);
                 }
@@ -64,7 +64,7 @@ const Shopping = () => {
             setTimeout(() => {
                 setMessage(null);
                 setIsLoading(true);
-                setIsInLoginFormVisible(false);
+                setIsLoginFormVisible(false);
                 getData();
             }, TIMEOUT_DELAY);
         }
@@ -82,7 +82,7 @@ const Shopping = () => {
         <><h1 id="shopping">Shopping</h1>
             <div className="app shopping"> {
                 message ? <div>{message}</div> :
-                    isInLoginFormVisible ? <LogginForm onSubmit={(e) => {
+                    isLoginFormVisible ? <LogginForm onSubmit={(e) => {
                         handleLoginSubmit(e)
                     }} /> :
                         isLoading ? <Spinner /> :
