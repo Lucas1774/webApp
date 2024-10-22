@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { get, post } from "../../api";
-import { Table } from "react-bootstrap";
+import { Table, Form } from "react-bootstrap";
 import "./Shopping.css"
 import Spinner from "../Spinner";
 import LogginForm from "../LoginForm";
@@ -11,6 +11,7 @@ const Shopping = () => {
     const [message, setMessage] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isLoginFormVisible, setIsLoginFormVisible] = useState(false);
+    const [isAddAlimentVisible, setIsAddAlimentVisible] = useState(false);
 
     const getData = async () => {
         setIsLoading(true);
@@ -21,6 +22,7 @@ const Shopping = () => {
             alert("Error fetching data:", error.message);
         } finally {
             setIsLoading(false);
+            setIsAddAlimentVisible(true);
         }
     };
 
@@ -70,6 +72,31 @@ const Shopping = () => {
         }
     };
 
+    const addAliment = async (event) => {
+        event.preventDefault();
+        setIsLoading(true);
+        const name = event.target[0].value.trim();
+        let message = "";
+        if (name) {
+            try {
+                const response = await post('/new-aliment', name);
+                message = response.data === 1 ? "Aliment added" : response.data;
+            } catch (error) {
+                alert("Error sending data:", error.message);
+            } finally {
+                if (message) {
+                    setMessage(message);
+                    setTimeout(() => {
+                        setMessage(null);
+                        setIsLoading(true);
+                        setIsAddAlimentVisible(false);
+                        getData();
+                    }, TIMEOUT_DELAY);
+                }
+            }
+        }
+    };
+
     const handleCheckboxChange = (event, id) => {
         // TODO: implement me
     };
@@ -86,27 +113,33 @@ const Shopping = () => {
                         handleLoginSubmit(e)
                     }} /> :
                         isLoading ? <Spinner /> :
-                            tableData &&
-                            <Table striped bordered hover responsive>
-                                <tbody>
-                                    {tableData.map((row) => (
-                                        <tr key={row.id}>
-                                            <td>{row.name}</td>
-                                            <td>
-                                                <input
-                                                    value={row.quantity}
-                                                    type="number"
-                                                    onChange={(e) => handleCheckboxChange(e, row.id)} />
-                                            </td>
-                                            <td>
-                                                <button onClick={(e) => handleEditClick(e, row.id)}>Edit</button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
-            }
-            </div></>
+                            <>
+                                {isAddAlimentVisible && <Form onSubmit={(e) => addAliment(e)}>
+                                    <input type="text" />
+                                    <button type="submit">Add aliment</button>
+                                </Form>
+                                } {tableData &&
+                                    <Table striped bordered hover responsive style={{ width: '100%', tableLayout: 'fixed' }}>
+                                        <tbody>
+                                            {tableData.map((row) => (
+                                                <tr key={row.id}>
+                                                    <td style={{ color: 'white' }}>{row.name}</td>
+                                                    <td>
+                                                        <input style={{ width: '100%' }}
+                                                            value={row.quantity}
+                                                            type="number"
+                                                            onChange={(e) => handleCheckboxChange(e, row.id)}
+                                                        />
+                                                    </td>
+                                                    <td>
+                                                        <button onClick={(e) => handleEditClick(e, row.id)}>Edit</button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </Table>
+                                }</>
+            }</div></>
     );
 };
 
