@@ -43,7 +43,7 @@ public class Controller {
 
     @GetMapping("/check-auth")
     public ResponseEntity<String> checkAuth(HttpServletRequest request) {
-        return this.retrieveAuthCookie(request.getCookies())
+        return this.retrieveAuthCookie(request.getCookies()) != null
                 ? ResponseEntity.ok("Authenticated")
                 : ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not Authenticated");
     }
@@ -69,17 +69,7 @@ public class Controller {
 
     @GetMapping("/shopping")
     public List<ShoppingItem> getShoppingItems(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        String authToken = null;
-
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("authToken".equals(cookie.getName()) && jwtUtil.isTokenValid(cookie.getValue())) {
-                    authToken = cookie.getValue();
-                    break;
-                }
-            }
-        }
+        String authToken = this.retrieveAuthCookie(request.getCookies());
         // TODO:
         List<ShoppingItem> res = new ArrayList<>();
         res.add(new ShoppingItem(0, "Apples", 7));
@@ -207,14 +197,14 @@ public class Controller {
         }
     }
 
-    private Boolean retrieveAuthCookie(Cookie[] cookies) {
+    private String retrieveAuthCookie(Cookie[] cookies) {
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if ("authToken".equals(cookie.getName()) && jwtUtil.isTokenValid(cookie.getValue())) {
-                    return true;
+                    return cookie.getValue();
                 }
             }
         }
-        return false;
+        return null;
     }
 }
