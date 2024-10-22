@@ -142,10 +142,12 @@ DELIMITER ;
 
 DELIMITER $$
 USE `my_first_database`$$
-CREATE TRIGGER `aliments_AFTER_INSERT` AFTER INSERT ON `aliments` FOR EACH ROW BEGIN
+CREATE PROCEDURE `assign_aliment_to_users`(IN p_aliment_name VARCHAR(255))
+BEGIN
     INSERT INTO shopping (aliment_id, user_id, quantity)
-    SELECT NEW.id, u.id, 0
-    FROM users u;
+    SELECT a.id, u.id, 0
+    FROM aliments a
+    JOIN users u ON a.name = p_aliment_name;
 END $$
 DELIMITER ;
 

@@ -8,6 +8,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.lucas.server.components.model.ShoppingItem;
 import com.lucas.server.components.sudoku.Sudoku;
@@ -115,12 +116,15 @@ public class DAO {
         }
     }
 
+    @Transactional
     public void insertAliment(String item) {
         try {
-            String sql = "{call " + this.sanitizePorcedureName("insert_aliment") + "(:p_aliment_name)}";
+            String insertAlimentSql = "{call " + this.sanitizePorcedureName("insert_aliment") + "(:p_aliment_name)}";
             MapSqlParameterSource parameters = new MapSqlParameterSource();
             parameters.addValue("p_aliment_name", item);
-            this.jdbcTemplate.update(sql, parameters);
+            this.jdbcTemplate.update(insertAlimentSql, parameters);
+            String assignAlimentSql = "{call " + this.sanitizePorcedureName("assign_aliment_to_users") + "(:p_aliment_name)}";
+            this.jdbcTemplate.update(assignAlimentSql, parameters);
         } catch (DataAccessException e) {
             e.printStackTrace();
             throw e;
