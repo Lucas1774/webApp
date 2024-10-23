@@ -1,15 +1,8 @@
--- MySQL Workbench Forward Engineering
-
-SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
-SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
-
-
-CREATE SCHEMA IF NOT EXISTS `my_first_database` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci ;
+CREATE SCHEMA `my_first_database` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci ;
 USE `my_first_database` ;
 
 
-CREATE TABLE IF NOT EXISTS  `my_first_database`.`aliments` (
+CREATE TABLE `my_first_database`.`aliments` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(50) NOT NULL,
   PRIMARY KEY (`id`),
@@ -17,7 +10,7 @@ CREATE TABLE IF NOT EXISTS  `my_first_database`.`aliments` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
-CREATE TABLE IF NOT EXISTS `my_first_database`.`my_table` (
+CREATE TABLE `my_first_database`.`my_table` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `ans` VARCHAR(50) NULL DEFAULT NULL,
   `text` VARCHAR(255) NULL DEFAULT NULL,
@@ -28,7 +21,7 @@ CREATE TABLE IF NOT EXISTS `my_first_database`.`my_table` (
 INSERT INTO `my_first_database`.`my_table` (`id`, `ans`, `text`) VALUES (1, NULL, NULL);
 
 
-CREATE TABLE IF NOT EXISTS  `my_first_database`.`shopping` (
+CREATE TABLE `my_first_database`.`shopping` (
   `id` int NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL,
   `aliment_id` int NOT NULL,
@@ -37,14 +30,14 @@ CREATE TABLE IF NOT EXISTS  `my_first_database`.`shopping` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
-CREATE TABLE IF NOT EXISTS `my_first_database`.`sudokus` (
+CREATE TABLE `my_first_database`.`sudokus` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `state` VARCHAR(255) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=98 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
-CREATE TABLE IF NOT EXISTS `my_first_database`.`users` (
+CREATE TABLE `my_first_database`.`users` (
   `id` int NOT NULL AUTO_INCREMENT,
   `username` VARCHAR(50) NOT NULL,
   `password` VARCHAR(50) NOT NULL,
@@ -150,8 +143,3 @@ BEGIN
     JOIN users u ON a.name = p_aliment_name;
 END $$
 DELIMITER ;
-
-
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
