@@ -116,17 +116,34 @@ public class DAO {
     }
 
     @Transactional
-    public void insertAliment(String aliment) {
+    public void insertAliment(String aliment, String user) {
         try {
-            String insertAlimentSql = "INSERT INTO aliments (name) VALUES (:aliment)";
-            MapSqlParameterSource parameters = new MapSqlParameterSource("aliment", aliment);
+            String insertAlimentSql = "INSERT INTO aliments (name) "
+                    + "SELECT :aliment "
+                    + "WHERE NOT EXISTS (SELECT 1 FROM aliments WHERE name = :aliment)";
+            MapSqlParameterSource parameters = new MapSqlParameterSource();
+            parameters.addValue("aliment", aliment);
+            parameters.addValue("user", user);
             this.jdbcTemplate.update(insertAlimentSql, parameters);
-
             String assignAlimentSql = "INSERT INTO shopping (aliment_id, user_id, quantity) "
-                    + "SELECT a.id, u.id, 0 "
-                    + "FROM aliments a "
-                    + "JOIN users u ON a.name = :aliment";
+                    + "VALUES ("
+                    + "(SELECT id FROM aliments WHERE name = :aliment),"
+                    + "(SELECT id FROM users WHERE username = :user),"
+                    + "0)";
             this.jdbcTemplate.update(assignAlimentSql, parameters);
+        } catch (DataAccessException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    public void updateAlimentQuantity(int id, int quantity) {
+        try {
+            String sql = "UPDATE shopping SET quantity = :quantity WHERE aliment_id = :id";
+            MapSqlParameterSource parameters = new MapSqlParameterSource();
+            parameters.addValue("id", id);
+            parameters.addValue("quantity", quantity);
+            this.jdbcTemplate.update(sql, parameters);
         } catch (DataAccessException e) {
             e.printStackTrace();
             throw e;

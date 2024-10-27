@@ -24,6 +24,7 @@ BEGIN
         user_id INT NOT NULL,
         aliment_id INT NOT NULL,
         quantity INT NOT NULL
+        CONSTRAINT unique_user_aliment UNIQUE (user_id, aliment_id)
     );
 END;
 GO

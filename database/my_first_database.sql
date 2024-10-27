@@ -26,7 +26,8 @@ CREATE TABLE `my_first_database`.`shopping` (
   `user_id` int NOT NULL,
   `aliment_id` int NOT NULL,
   `quantity` int NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_aliment_UNIQUE` (`user_id`, `aliment_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 

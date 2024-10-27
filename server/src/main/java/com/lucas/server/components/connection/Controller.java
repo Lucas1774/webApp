@@ -1,6 +1,7 @@
 package com.lucas.server.components.connection;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -29,6 +30,8 @@ public class Controller {
     private Solver solver;
     private SudokuParser sudokuParser;
     private boolean secure;
+    private static final String ADMIN = "admin";
+    private static final String DEFAULT = "default";
 
     public Controller(JwtUtil jwtUtil, DAO dao, Generator generator, Solver solver, SudokuParser sudokuParser,
             @Value("${spring.security.jwt.secure}") boolean secure) {
@@ -51,7 +54,7 @@ public class Controller {
     public ResponseEntity<String> handleLogin(@RequestBody String password, HttpServletResponse response) {
         String correctPassword;
         try {
-            correctPassword = dao.getPassword("admin");
+            correctPassword = dao.getPassword(ADMIN);
         } catch (DataAccessException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
@@ -71,17 +74,27 @@ public class Controller {
 
     @GetMapping("/shopping")
     public List<ShoppingItem> getShoppingItems(HttpServletRequest request) {
-        return this.retrieveAuthCookie(request.getCookies()) == null ? dao.getShoppingItems("default")
-                : dao.getShoppingItems("admin");
+        return dao.getShoppingItems(this.retrieveAuthCookie(request.getCookies()) != null ? ADMIN : DEFAULT);
     }
 
     @PostMapping("/new-aliment")
-    public String postAliment(@RequestBody String item) {
+    public String postAliment(HttpServletRequest request, @RequestBody String item) {
         try {
-            dao.insertAliment(item.replace("\"", ""));
+            dao.insertAliment(item.replace("\"", ""),
+                    this.retrieveAuthCookie(request.getCookies()) != null ? ADMIN : DEFAULT);
             return "1";
         } catch (DataAccessException e) {
             return e.getMessage();
+        }
+    }
+
+    @PostMapping("/update-aliment-quantity")
+    public ResponseEntity<String> updateAlimentQuantity(@RequestBody Map<String, Object> data) {
+        try {
+            dao.updateAlimentQuantity((int) data.get("id"), (int) data.get("quantity"));
+            return ResponseEntity.ok("Aliment quantity updated successfully");
+        } catch (DataAccessException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
