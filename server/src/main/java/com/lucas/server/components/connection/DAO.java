@@ -3,7 +3,6 @@ package com.lucas.server.components.connection;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -16,19 +15,16 @@ import com.lucas.server.components.sudoku.Sudoku;
 @Repository
 public class DAO {
 
-    private String schemaName;
     private NamedParameterJdbcTemplate jdbcTemplate;
 
-    public DAO(NamedParameterJdbcTemplate jdbcTemplate, @Value("${spring.datasource.url}") String datasourceUrl) {
+    public DAO(NamedParameterJdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.schemaName = this.extractSchemaFromUrl(datasourceUrl);
     }
 
-    public String getPassword(String string) {
+    public String getPassword(String username) {
         try {
-            String sql = "{call " + this.sanitizePorcedureName("get_password") + "(:p_username)}";
-            MapSqlParameterSource parameters = new MapSqlParameterSource();
-            parameters.addValue("p_username", string);
+            String sql = "SELECT password FROM users WHERE username = :username";
+            MapSqlParameterSource parameters = new MapSqlParameterSource("username", username);
             return this.jdbcTemplate.queryForObject(sql, parameters, String.class);
         } catch (DataAccessException e) {
             e.printStackTrace();
@@ -38,20 +34,18 @@ public class DAO {
 
     public void insert(Double number) {
         try {
-            String sql = "{call " + this.sanitizePorcedureName("update_ans") + "(:number)}";
-            MapSqlParameterSource parameters = new MapSqlParameterSource();
-            parameters.addValue("number", number);
+            String sql = "UPDATE my_table SET ans = :number, text_mode = 0 WHERE id = 1";
+            MapSqlParameterSource parameters = new MapSqlParameterSource("number", number);
             this.jdbcTemplate.update(sql, parameters);
         } catch (DataAccessException e) {
             e.printStackTrace();
         }
     }
 
-    public void insertString(String string) {
+    public void insertString(String text) {
         try {
-            String sql = "{call " + this.sanitizePorcedureName("update_text") + "(:p_string)}";
-            MapSqlParameterSource parameters = new MapSqlParameterSource();
-            parameters.addValue("p_string", string);
+            String sql = "UPDATE my_table SET text = :text, text_mode = 1 WHERE id = 1";
+            MapSqlParameterSource parameters = new MapSqlParameterSource("text", text);
             this.jdbcTemplate.update(sql, parameters);
         } catch (DataAccessException e) {
             e.printStackTrace();
@@ -60,12 +54,11 @@ public class DAO {
 
     public String get() {
         try {
-            String sql = "{call " + this.sanitizePorcedureName("get_calculator_data") + "}";
-            MapSqlParameterSource parameters = new MapSqlParameterSource();
-            return this.jdbcTemplate.queryForObject(sql, parameters,
+            String sql = "SELECT * FROM my_table WHERE id = 1";
+            return this.jdbcTemplate.queryForObject(sql, new MapSqlParameterSource(),
                     (rs, rowNum) -> rs.getBoolean("text_mode")
                             ? Optional.ofNullable(rs.getString("text")).orElse("Nothing here yet")
-                            : Optional.ofNullable(rs.getString("ans")).orElse(String.valueOf(0)));
+                            : Optional.ofNullable(rs.getString("ans")).orElse("0"));
         } catch (DataAccessException e) {
             e.printStackTrace();
             throw e;
@@ -74,9 +67,11 @@ public class DAO {
 
     public void insertSudokus(List<Sudoku> sudokus) {
         try {
-            String sql = "{call " + this.sanitizePorcedureName("insert_sudoku") + "(:p_state)}";
+            String sql = "INSERT INTO sudokus (state) "
+                    + "SELECT :state "
+                    + "WHERE NOT EXISTS (SELECT 1 FROM sudokus WHERE state = :state)";
             MapSqlParameterSource[] params = sudokus.stream()
-                    .map(sudoku -> new MapSqlParameterSource("p_state", sudoku.serialize()))
+                    .map(sudoku -> new MapSqlParameterSource("state", sudoku.serialize()))
                     .toArray(MapSqlParameterSource[]::new);
             this.jdbcTemplate.batchUpdate(sql, params);
         } catch (DataAccessException e) {
@@ -87,22 +82,26 @@ public class DAO {
 
     public List<Sudoku> getSudokus() {
         try {
-            return this.jdbcTemplate.query("{call " + sanitizePorcedureName("get_sudokus") + "}",
-                    (resultSet, rowNum) -> Sudoku.withValues(resultSet.getString("state").replace("\"", "")
-                            .chars()
-                            .map(Character::getNumericValue)
-                            .toArray()));
+            String sql = "SELECT state FROM sudokus";
+            return this.jdbcTemplate.query(sql,
+                    (resultSet, rowNum) -> Sudoku.withValues(
+                            resultSet.getString("state").replace("\"", "")
+                                    .chars()
+                                    .map(Character::getNumericValue)
+                                    .toArray()));
         } catch (DataAccessException e) {
             e.printStackTrace();
             throw e;
         }
     }
 
-    public List<ShoppingItem> getShoppingItems(String string) {
+    public List<ShoppingItem> getShoppingItems(String username) {
         try {
-            String sql = "CALL " + this.sanitizePorcedureName("get_user_aliments") + "(:p_user_name)";
-            MapSqlParameterSource params = new MapSqlParameterSource();
-            params.addValue("p_user_name", string);
+            String sql = "SELECT a.id, a.name, s.quantity "
+                    + "FROM aliments a "
+                    + "INNER JOIN shopping s ON s.aliment_id = a.id "
+                    + "WHERE s.user_id = (SELECT id FROM users WHERE username = :username)";
+            MapSqlParameterSource params = new MapSqlParameterSource("username", username);
             return this.jdbcTemplate.query(
                     sql,
                     params,
@@ -117,34 +116,20 @@ public class DAO {
     }
 
     @Transactional
-    public void insertAliment(String item) {
+    public void insertAliment(String aliment) {
         try {
-            String insertAlimentSql = "{call " + this.sanitizePorcedureName("insert_aliment") + "(:p_aliment_name)}";
-            MapSqlParameterSource parameters = new MapSqlParameterSource();
-            parameters.addValue("p_aliment_name", item);
+            String insertAlimentSql = "INSERT INTO aliments (name) VALUES (:aliment)";
+            MapSqlParameterSource parameters = new MapSqlParameterSource("aliment", aliment);
             this.jdbcTemplate.update(insertAlimentSql, parameters);
-            String assignAlimentSql = "{call " + this.sanitizePorcedureName("assign_aliment_to_users") + "(:p_aliment_name)}";
+
+            String assignAlimentSql = "INSERT INTO shopping (aliment_id, user_id, quantity) "
+                    + "SELECT a.id, u.id, 0 "
+                    + "FROM aliments a "
+                    + "JOIN users u ON a.name = :aliment";
             this.jdbcTemplate.update(assignAlimentSql, parameters);
         } catch (DataAccessException e) {
             e.printStackTrace();
             throw e;
-        }
-    }
-
-    private String extractSchemaFromUrl(String url) {
-        String[] parts = url.split(";database=");
-        if (parts.length > 1) {
-            return parts[1].split(";")[0];
-        } else {
-            return null;
-        }
-    }
-
-    private String sanitizePorcedureName(String procName) {
-        if (this.schemaName == null) {
-            return procName;
-        } else {
-            return this.schemaName + "." + procName;
         }
     }
 }
