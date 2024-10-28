@@ -5,7 +5,8 @@ import { Table, Form } from "react-bootstrap";
 import "./Shopping.css"
 import Spinner from "../Spinner";
 import LoginForm from "../LoginForm";
-import { TIMEOUT_DELAY, DESC, ASC, ID_KEY, NAME_KEY, QUANTITY_KEY, STRING, NUMBER, META } from "../../constants";
+import icon from "../../assets/images/bin.png"
+import { TIMEOUT_DELAY, DESC, ASC, ID_KEY, NAME_KEY, QUANTITY_KEY, REMOVE_KEY, STRING, NUMBER, META } from "../../constants";
 
 const Shopping = () => {
     const [tableData, setTableData] = useState(null);
@@ -21,51 +22,6 @@ const Shopping = () => {
     const debouncedValue = useDebounce(quantityInputValue, 1000);
     const filterDebouncedValue = useDebounce(filterValue, 1000)
 
-    const getData = async () => {
-        setIsLoading(true);
-        try {
-            const response = await get("/shopping");
-            setTableData(response.data);
-        } catch (error) {
-            alert("Error fetching data:", error.message);
-        } finally {
-            setIsLoading(false);
-            setIsAddAlimentVisible(true);
-        }
-    };
-
-    const updateAliment = useCallback(async (value, id, name) => {
-        if (isNaN(value) || parseInt(value) < 0) {
-            return;
-        }
-        setIsLoading(true);
-        let message = "";
-        try {
-            await post('/update-aliment-quantity', { id, quantity: parseInt(value) });
-            message = name + " updated";
-        } catch (error) {
-            alert("Error sending data:", error.message);
-        } finally {
-            if (message) {
-                setMessage(message);
-                setTimeout(() => {
-                    setMessage(null);
-                    setIsLoading(true);
-                    setIsAddAlimentVisible(false);
-                    getData();
-                }, TIMEOUT_DELAY);
-            } else {
-                setIsLoading(false);
-            }
-        }
-    }, []);
-
-    useEffect(() => {
-        if (debouncedValue?.value != null && debouncedValue?.rowId != null && debouncedValue?.rowName != null) {
-            updateAliment(debouncedValue.value, debouncedValue.rowId, debouncedValue.rowName);
-        }
-    }, [debouncedValue, updateAliment]);
-
     useEffect(() => {
         if (filterDebouncedValue?.value != null && filterDebouncedValue?.column != null) {
             setFilters(prevFilters => {
@@ -80,14 +36,14 @@ const Shopping = () => {
         const checkAuth = async () => {
             setIsLoading(true);
             try {
-                await get("/check-auth");
-                await getData();
-            } catch (error) {
-                if (error.response && error.response.status === 401) {
+                const response = await get("/check-auth");
+                if (response.data !== 1) {
                     setIsLoginFormVisible(true);
                 } else {
-                    alert("Error checking authentication:", error.message);
+                    await getData();
                 }
+            } catch (error) {
+                alert("Error checking authentication:", error.message);
             } finally {
                 setIsLoading(false);
             }
@@ -95,24 +51,63 @@ const Shopping = () => {
         checkAuth();
     }, []);
 
+    const getData = async () => {
+        setIsLoading(true);
+        try {
+            const response = await get("/shopping");
+            setTableData(response.data);
+        } catch (error) {
+            alert("Error fetching data:", error.message);
+        } finally {
+            setIsLoading(false);
+            setIsAddAlimentVisible(true);
+        }
+    };
+
+    const makeGenericRequest = async (request, callbackAfterSuccess) => {
+        setIsLoading(true);
+        let message = "";
+        try {
+            const response = await request();
+            message = response.data;
+        } catch (error) {
+            alert("Error sending data:", error.message);
+        } finally {
+            if (message) {
+                setMessage(message);
+                setTimeout(() => {
+                    setMessage(null);
+                    callbackAfterSuccess();
+                }, TIMEOUT_DELAY);
+            } else {
+                setIsLoading(false);
+            }
+        }
+    }
+
+    const updateAliment = useCallback(async (value, id, name) => {
+        if (isNaN(value) || parseInt(value) < 0) {
+            return;
+        }
+        makeGenericRequest(() => post('/update-aliment-quantity', { id, name, quantity: parseInt(value) }), () => {
+            setIsLoading(true);
+            setIsAddAlimentVisible(false);
+            getData();
+        });
+    }, []);
+
+    useEffect(() => {
+        if (debouncedValue?.value != null && debouncedValue?.rowId != null && debouncedValue?.rowName != null) {
+            updateAliment(debouncedValue.value, debouncedValue.rowId, debouncedValue.rowName);
+        }
+    }, [debouncedValue, updateAliment]);
+
     const handleLoginSubmit = async (event) => {
         event.preventDefault();
         const password = event.target[0].value.trim();
         const action = event.nativeEvent.submitter.value;
-        setIsLoading(true);
-        let message = "";
-        if ("validate" === action && password) {
-            try {
-                const response = await post('/login', password);
-                message = response.data !== -1 ? "Granted admin access" : "Wrong password. Continuing as guest";
-            } catch (error) {
-                alert("Error sending data:", error.message);
-            }
-        } else {
-            message = "No password provided. Continuing as guest";
-        }
-        if (message) {
-            setMessage(message);
+        if (!password || "validate" !== action) {
+            setMessage("No password provided. Continuing as guest");
             setTimeout(() => {
                 setMessage(null);
                 setIsLoading(true);
@@ -120,7 +115,11 @@ const Shopping = () => {
                 getData();
             }, TIMEOUT_DELAY);
         } else {
-            setIsLoading(false);
+            makeGenericRequest(() => post('/login', password), () => {
+                setIsLoading(true);
+                setIsLoginFormVisible(false);
+                getData();
+            });
         }
     };
 
@@ -130,31 +129,20 @@ const Shopping = () => {
         if (!name) {
             return;
         }
-        setIsLoading(true);
-        let message = "";
-        try {
-            const response = await post('/new-aliment', name);
-            message = response.data === 1 ? "Aliment added" : response.data;
-        } catch (error) {
-            alert("Error sending data:", error.message);
-        } finally {
-            if (message) {
-                setMessage(message);
-                setTimeout(() => {
-                    setMessage(null);
-                    setIsLoading(true);
-                    setIsAddAlimentVisible(false);
-                    getData();
-                }, TIMEOUT_DELAY);
-            } else {
-                setIsLoading(false);
-            }
-        }
+        makeGenericRequest(() => post('/new-aliment', name), () => {
+            setIsLoading(true);
+            setIsAddAlimentVisible(false);
+            getData();
+        });
     };
 
-    const handleEditClick = (event, id) => {
-        // TODO: implement me
-    };
+    const handleRemoveAliment = async (id, name) => {
+        makeGenericRequest(() => post('/remove-aliment', { id, name }), () => {
+            setIsLoading(true);
+            setIsAddAlimentVisible(false);
+            getData();
+        });
+    }
 
     const applyFilters = (data, filters) => {
         return data.filter((row) => {
@@ -182,6 +170,37 @@ const Shopping = () => {
             }
         });
     };
+
+    const renderColumn = (key, id, name, quantity) => {
+        if (key === NAME_KEY) {
+            return <td style={{ color: 'white' }}>{name}</td>;
+        }
+        if (key === QUANTITY_KEY) {
+            return (
+                <td>
+                    <input style={{ width: '100%' }}
+                        defaultValue={quantity}
+                        type="number"
+                        onChange={(e) =>
+                            setQuantityInputValue({
+                                value: parseInt(e.target.value),
+                                rowId: id,
+                                rowName: name
+                            })}
+                    />
+                </td>
+            );
+        }
+        if (key === REMOVE_KEY) {
+            return (
+                <td>
+                    <button style={{ textAlign: 'center', width: '100%', height: '100%', margin: '0', padding: '0' }} onClick={() => handleRemoveAliment(id, name)}>
+                        <img style={{ height: '45px', margin: '0', paddingBottom: '8px' }} src={icon} alt=""></img>
+                    </button>
+                </td>
+            );
+        }
+    }
 
     return (
         <><h1 id="shopping">Shopping</h1>
@@ -234,22 +253,9 @@ const Shopping = () => {
                                                 const quantity = row[QUANTITY_KEY];
                                                 return (
                                                     <tr key={id}>
-                                                        <td style={{ color: 'white' }}>{name}</td>
-                                                        <td>
-                                                            <input style={{ width: '100%' }}
-                                                                defaultValue={quantity}
-                                                                type="number"
-                                                                onChange={(e) =>
-                                                                    setQuantityInputValue({
-                                                                        value: parseInt(e.target.value),
-                                                                        rowId: id,
-                                                                        rowName: name
-                                                                    })}
-                                                            />
-                                                        </td>
-                                                        <td>
-                                                            <button onClick={(e) => handleEditClick(e, row.id)}>Edit</button>
-                                                        </td>
+                                                        {META.KEYS
+                                                            .filter((key) => META.VISIBLE[key])
+                                                            .map((key) => renderColumn(key, id, name, quantity))}
                                                     </tr>
                                                 )
                                             })}
