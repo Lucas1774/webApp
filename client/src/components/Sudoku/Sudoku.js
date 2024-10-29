@@ -6,6 +6,7 @@ import SudokuGrid from "./SudokuGrid";
 import "./Sudoku.css";
 import Spinner from "../Spinner";
 import { TIMEOUT_DELAY } from "../../constants";
+import { handleError } from "../errorHandler";
 
 const Sudoku = () => {
     const [sudoku, setSudoku] = useState("");
@@ -95,7 +96,7 @@ const Sudoku = () => {
                 }
             })
             .catch(error => {
-                alert("Error sending data: " + error.message);
+                handleError("Error sending data", error);
                 restoreDefaults();
             });
     }, [initialSudoku, isSolved, restoreDefaults, sudoku]);
@@ -121,7 +122,7 @@ const Sudoku = () => {
                 }
             })
             .catch(error => {
-                alert("Error sending data: " + error.message);
+                handleError("Error sending data", error);
                 restoreDefaults();
             })
             .finally(() => {
@@ -176,7 +177,7 @@ const Sudoku = () => {
                 }
             })
             .catch(error => {
-                alert("Error sending data: " + error.message);
+                handleError("Error sending data", error);
                 restoreDefaults();
             })
             .finally(() => {
@@ -276,8 +277,7 @@ const Sudoku = () => {
                 }, TIMEOUT_DELAY);
             })
             .catch(error => {
-                ;
-                alert("Error sending data: " + error.message);
+                handleError("Error sending data", error);
                 restoreDefaults();
             })
             .finally(() => {

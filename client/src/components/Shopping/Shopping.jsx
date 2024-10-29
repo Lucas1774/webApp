@@ -7,6 +7,7 @@ import Spinner from "../Spinner";
 import LoginForm from "../LoginForm";
 import icon from "../../assets/images/bin.png"
 import { TIMEOUT_DELAY, DESC, ASC, ID_KEY, NAME_KEY, QUANTITY_KEY, REMOVE_KEY, STRING, NUMBER, META } from "../../constants";
+import { handleError } from "../errorHandler";
 
 const Shopping = () => {
     const [tableData, setTableData] = useState(null);
@@ -43,7 +44,7 @@ const Shopping = () => {
                     await getData();
                 }
             } catch (error) {
-                alert("Error checking authentication:", error.message);
+                handleError("Error checking authentication", error);
             } finally {
                 setIsLoading(false);
             }
@@ -57,7 +58,7 @@ const Shopping = () => {
             const response = await get("/shopping");
             setTableData(response.data);
         } catch (error) {
-            alert("Error fetching data:", error.message);
+            handleError("Error fetching data", error);
         } finally {
             setIsLoading(false);
             setIsAddAlimentVisible(true);
@@ -71,7 +72,7 @@ const Shopping = () => {
             const response = await request();
             message = response.data;
         } catch (error) {
-            alert("Error sending data:", error.message);
+            handleError("Error sending data", error);
         } finally {
             if (message) {
                 setMessage(message);

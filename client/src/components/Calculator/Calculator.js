@@ -3,6 +3,7 @@ import { post, get } from "../../api";
 import { Form, Button, Row } from "react-bootstrap";
 import "./Calculator.css"
 import Spinner from "../Spinner";
+import { handleError } from "../errorHandler";
 
 const Calculator = () => {
   const [input, setInput] = useState("");
@@ -26,33 +27,18 @@ const Calculator = () => {
     setInput("");
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (isSubmit) => {
     let tempInput = input;
     setInput("");
     setIsLoading(true);
-    post("/ans", input)
+    let action = isSubmit ? () => post("/ans", input) : () => get("/ans");
+    action()
       .then(response => {
-        setInput(response.data.toString());
+        setInput(isSubmit ? response.data.toString() : input + response.data.toString());
       })
       .catch(error => {
-        alert("Error sending data: " + error.message);
-        setInput(tempInput);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  };
-
-  const handleReceive = () => {
-    let tempInput = input;
-    setInput("");
-    setIsLoading(true);
-    get("/ans")
-      .then(response => {
-        setInput(input + response.data.toString());
-      })
-      .catch(error => {
-        alert("Error receiving data: " + error.message);
+        const prefix = "Error " + (isSubmit ? "sending " : "receiving ") + "data";
+        handleError(prefix, error)
         setInput(tempInput);
       })
       .finally(() => {
@@ -63,7 +49,7 @@ const Calculator = () => {
   return (
     <><h1 id="calculator">Calculator</h1>
       <div className="app calculator">
-        <Form onSubmit={handleSubmit}>
+        <Form onSubmit={() => handleSubmit(true)}>
           <Form.Control value={input} onChange={handleKeyDown} />
           {isLoading && <Spinner color="#000" position="absolute" />}
         </Form>
@@ -99,8 +85,8 @@ const Calculator = () => {
           <Button onClick={handleClick} value="0">0</Button>
           <Button onClick={handleClick} value=".">.</Button>
           <Button onClick={handleClick} value="*10^">EXP</Button>
-          <Button onClick={handleReceive}>Ans</Button>
-          <Button type="submit" variant="success" onClick={handleSubmit}>=</Button>
+          <Button onClick={() => handleSubmit(false)}>Ans</Button>
+          <Button type="submit" variant="success" onClick={() => handleSubmit(true)}>=</Button>
         </Row>
       </div></>
   );
