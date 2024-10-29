@@ -24,41 +24,53 @@ export const DESC = "desc";
 export const ASC = "asc";
 export const ID_KEY = "ID";
 export const NAME_KEY = "NAME";
+export const CATEGORY_KEY = "CATEGORY";
 export const QUANTITY_KEY = "QUANTITY";
+export const EDIT_KEY = "EDIT";
 export const REMOVE_KEY = "REMOVE";
 export const STRING = "string";
 export const NUMBER = "number";
 export const ICON = "icon";
 export const META = {
-    KEYS: [ID_KEY, NAME_KEY, QUANTITY_KEY, REMOVE_KEY],
+    KEYS: [ID_KEY, NAME_KEY, CATEGORY_KEY, QUANTITY_KEY, EDIT_KEY, REMOVE_KEY],
     DATATYPE: {
         [ID_KEY]: NUMBER,
         [NAME_KEY]: STRING,
+        [CATEGORY_KEY]: STRING,
         [QUANTITY_KEY]: NUMBER,
+        [EDIT_KEY]: ICON,
         [REMOVE_KEY]: ICON
     },
     VISIBLE: {
         [ID_KEY]: false,
         [NAME_KEY]: true,
+        [CATEGORY_KEY]: true,
         [QUANTITY_KEY]: true,
+        [EDIT_KEY]: true,
         [REMOVE_KEY]: true
     },
     DISPLAY_NAME: {
         [ID_KEY]: "",
         [NAME_KEY]: "Name",
+        [CATEGORY_KEY]: "Category",
         [QUANTITY_KEY]: "Quantity",
+        [EDIT_KEY]: "",
         [REMOVE_KEY]: ""
     },
     SORTABLE: {
         [ID_KEY]: true,
         [NAME_KEY]: true,
+        [CATEGORY_KEY]: true,
         [QUANTITY_KEY]: true,
+        [EDIT_KEY]: false,
         [REMOVE_KEY]: false
     },
     FILTERABLE: {
         [ID_KEY]: true,
         [NAME_KEY]: true,
+        [CATEGORY_KEY]: true,
         [QUANTITY_KEY]: true,
+        [EDIT_KEY]: false,
         [REMOVE_KEY]: false
     }
 }
