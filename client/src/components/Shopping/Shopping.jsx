@@ -1,12 +1,14 @@
 import React, { useEffect, useState, useCallback } from "react";
 import useDebounce from "../../hooks/useDebounce";
 import { get, post } from "../../api";
-import { Table, Form } from "react-bootstrap";
+import { Table, Button, Form } from "react-bootstrap";
 import "./Shopping.css"
 import Spinner from "../Spinner";
 import LoginForm from "../LoginForm";
-import icon from "../../assets/images/bin.png"
-import { TIMEOUT_DELAY, DESC, ASC, ID_KEY, NAME_KEY, QUANTITY_KEY, REMOVE_KEY, STRING, NUMBER, META } from "../../constants";
+import deleteIcon from "../../assets/images/bin.png"
+import resetIcon from "../../assets/images/remove.png"
+import editIcon from "../../assets/images/edit.png"
+import * as constants from "../../constants";
 import { handleError } from "../errorHandler";
 
 const Shopping = () => {
@@ -18,7 +20,8 @@ const Shopping = () => {
     const [isLoginFormVisible, setIsLoginFormVisible] = useState(false);
     const [isAddAlimentVisible, setIsAddAlimentVisible] = useState(false);
     const [filters, setFilters] = useState({});
-    const [order, setOrder] = useState({ key: null, order: DESC })
+    const [order, setOrder] = useState({ key: null, order: constants.DESC })
+    const [isShowOnlyPositive, setIsShowOnlyPositive] = useState(false);
 
     const debouncedValue = useDebounce(quantityInputValue, 1000);
     const filterDebouncedValue = useDebounce(filterValue, 1000)
@@ -79,7 +82,7 @@ const Shopping = () => {
                 setTimeout(() => {
                     setMessage(null);
                     callbackAfterSuccess();
-                }, TIMEOUT_DELAY);
+                }, constants.TIMEOUT_DELAY);
             } else {
                 setIsLoading(false);
             }
@@ -114,7 +117,7 @@ const Shopping = () => {
                 setIsLoading(true);
                 setIsLoginFormVisible(false);
                 getData();
-            }, TIMEOUT_DELAY);
+            }, constants.TIMEOUT_DELAY);
         } else {
             makeGenericRequest(() => post('/login', password), () => {
                 setIsLoading(true);
@@ -123,6 +126,10 @@ const Shopping = () => {
             });
         }
     };
+
+    const handleResetAll = async () => {
+        // TODO: implement me
+    }
 
     const handleAddAlimentSubmit = async (event) => {
         event.preventDefault();
@@ -137,6 +144,10 @@ const Shopping = () => {
         });
     };
 
+    const handleEditAliment = () => {
+        // TODO: implement me
+    }
+
     const handleRemoveAliment = async (id, name) => {
         makeGenericRequest(() => post('/remove-aliment', { id, name }), () => {
             setIsLoading(true);
@@ -147,10 +158,10 @@ const Shopping = () => {
 
     const applyFilters = (data, filters) => {
         return data.filter((row) => {
-            return Object.keys(filters).every((key) => {
-                if (META.DATATYPE[key] === NUMBER) {
-                    return isNaN(filters[key]) || row[key] === filters[key];
-                } else if (META.DATATYPE[key] === STRING) {
+            return (!isShowOnlyPositive || (isShowOnlyPositive && row[constants.QUANTITY_KEY] !== 0)) && Object.keys(filters).every((key) => {
+                if (constants.META.DATATYPE[key] === constants.NUMBER) {
+                    return isNaN(filters[key]) || row[key] >= filters[key];
+                } else if (constants.META.DATATYPE[key] === constants.STRING) {
                     return row[key].toString().toLowerCase().includes(filters[key].toLowerCase());
                 } else {
                     return true;
@@ -164,7 +175,7 @@ const Shopping = () => {
             return data;
         }
         return data.sort((a, b) => {
-            if (order.order === DESC) {
+            if (order.order === constants.DESC) {
                 return a[order.key] < b[order.key] ? 1 : -1;
             } else {
                 return a[order.key] > b[order.key] ? 1 : -1;
@@ -173,31 +184,52 @@ const Shopping = () => {
     };
 
     const renderColumn = (key, id, name, quantity) => {
-        if (key === NAME_KEY) {
-            return <td style={{ color: 'white' }}>{name}</td>;
+        if (key === constants.NAME_KEY) {
+            return <td style={{ maxWidth: '100px' }}>{name}</td>;
         }
-        if (key === QUANTITY_KEY) {
+        if (key === constants.CATEGORY_KEY) {
+            return <td style={{ maxWidth: '100px' }}>{name}</td>;
+        }
+        if (key === constants.QUANTITY_KEY) {
             return (
                 <td>
-                    <input style={{ width: '100%' }}
-                        defaultValue={quantity}
-                        type="number"
-                        onChange={(e) =>
-                            setQuantityInputValue({
-                                value: parseInt(e.target.value),
-                                rowId: id,
-                                rowName: name
-                            })}
-                    />
+                    <div className="cell-item-container">
+                        <Form.Control defaultValue={quantity}
+                            inputMode="numeric"
+                            onChange={(e) =>
+                                setQuantityInputValue({
+                                    value: parseInt(e.target.value),
+                                    rowId: id,
+                                    rowName: name
+                                })}
+                            onClick={(e) => e.target.select()}
+                        />
+                        <Button className="icon-button" onClick={() => {
+                            if (quantity !== 0) {
+                                updateAliment(0, id, name)
+                            }
+                        }}>
+                            <img src={resetIcon} alt=""></img>
+                        </Button>
+                    </div>
                 </td>
             );
         }
-        if (key === REMOVE_KEY) {
+        if (key === constants.EDIT_KEY) {
             return (
-                <td>
-                    <button style={{ textAlign: 'center', width: '100%', height: '100%', margin: '0', padding: '0' }} onClick={() => handleRemoveAliment(id, name)}>
-                        <img style={{ height: '45px', margin: '0', paddingBottom: '8px' }} src={icon} alt=""></img>
-                    </button>
+                <td style={{ padding: '5px' }}>
+                    <Button className="icon-button" onClick={() => handleEditAliment(id, name)}>
+                        <img src={editIcon} alt=""></img>
+                    </Button>
+                </td>
+            );
+        }
+        if (key === constants.REMOVE_KEY) {
+            return (
+                <td style={{ padding: '5px' }}>
+                    <Button className="icon-button" onClick={() => handleRemoveAliment(id, name)}>
+                        <img src={deleteIcon} alt=""></img>
+                    </Button>
                 </td>
             );
         }
@@ -213,35 +245,37 @@ const Shopping = () => {
                         isLoading ? <Spinner /> :
                             <>
                                 {isAddAlimentVisible && <Form onSubmit={(e) => handleAddAlimentSubmit(e)}>
-                                    <input type="text" />
-                                    <button type="submit">Add aliment</button>
+                                    <Form.Control type="text" />
+                                    <Button className="thirty-percent" type="submit" variant="success">Add</Button>
+                                    <Button className="thirty-percent" onClick={() => setIsShowOnlyPositive((prev) => !prev)}>{isShowOnlyPositive ? "Show all" : "Hide zero"}</Button>
+                                    <Button className="thirty-percent restart" onClick={(e) => handleResetAll(e)}>Reset all</Button>
                                 </Form>
                                 } {tableData &&
-                                    <Table striped bordered hover responsive style={{ width: '100%', tableLayout: 'fixed' }}>
+                                    <Table striped bordered hover responsive>
                                         <thead>
                                             <tr>
-                                                {META.KEYS.filter((key) => META.VISIBLE[key]).map((key) => (
-                                                    <th key={key} style={{ color: 'white' }}>
-                                                        {META.DISPLAY_NAME[key]}
-                                                        {META.SORTABLE[key] && (
-                                                            <button onClick={() => {
-                                                                setOrder((prevOrder) => ({
-                                                                    key: key,
-                                                                    order: prevOrder.key === key ? (prevOrder.order === DESC ? ASC : DESC) : ASC
-                                                                }));
-                                                            }}>
-                                                                {order.key === key ? order.order === ASC ? '▲' : '▼' : 'Sort'}
-                                                            </button>
-                                                        )}
-                                                        {META.FILTERABLE[key] && (
-                                                            <input style={{ width: '100%' }}
-                                                                type="text"
+                                                {constants.META.KEYS.filter((key) => constants.META.VISIBLE[key]).map((key) => (
+                                                    <th key={key}>
+                                                        {constants.META.FILTERABLE[key] && (
+                                                            <Form.Control type="text"
+                                                                placeholder={constants.META.DISPLAY_NAME[key]}
                                                                 onChange={(e) =>
                                                                     setFilterValue({
                                                                         column: key,
-                                                                        value: META.DATATYPE[key] === NUMBER ? parseInt(e.target.value) : e.target.value
+                                                                        value: constants.META.DATATYPE[key] === constants.NUMBER ? parseInt(e.target.value) : e.target.value
                                                                     })}
+                                                                onClick={(e) => e.target.select()}
                                                             />
+                                                        )}
+                                                        {constants.META.SORTABLE[key] && (
+                                                            <Button onClick={() => {
+                                                                setOrder((prevOrder) => ({
+                                                                    key: key,
+                                                                    order: prevOrder.key === key ? (prevOrder.order === constants.DESC ? constants.ASC : constants.DESC) : constants.ASC
+                                                                }));
+                                                            }}>
+                                                                {order.key === key ? order.order === constants.ASC ? '▲' : '▼' : 'Sort'}
+                                                            </Button>
                                                         )}
                                                     </th>
                                                 ))}
@@ -249,13 +283,13 @@ const Shopping = () => {
                                         </thead>
                                         <tbody>
                                             {applyOrder(applyFilters(tableData, filters), order).map((row) => {
-                                                const id = row[ID_KEY];
-                                                const name = row[NAME_KEY];
-                                                const quantity = row[QUANTITY_KEY];
+                                                const id = row[constants.ID_KEY];
+                                                const name = row[constants.NAME_KEY];
+                                                const quantity = row[constants.QUANTITY_KEY];
                                                 return (
                                                     <tr key={id}>
-                                                        {META.KEYS
-                                                            .filter((key) => META.VISIBLE[key])
+                                                        {constants.META.KEYS
+                                                            .filter((key) => constants.META.VISIBLE[key])
                                                             .map((key) => renderColumn(key, id, name, quantity))}
                                                     </tr>
                                                 )
