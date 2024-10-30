@@ -128,7 +128,11 @@ const Shopping = () => {
     };
 
     const handleResetAll = async () => {
-        // TODO: implement me
+        makeGenericRequest(() => post('/update-all-aliment-quantity', null), () => {
+            setIsLoading(true);
+            setIsAddAlimentVisible(false);
+            getData();
+        });
     }
 
     const handleAddAlimentSubmit = async (event) => {
@@ -185,14 +189,14 @@ const Shopping = () => {
 
     const renderColumn = (key, id, name, quantity) => {
         if (key === constants.NAME_KEY) {
-            return <td style={{ maxWidth: '100px' }}>{name}</td>;
+            return <td key={key} title={name} style={{ maxWidth: '100px' }}>{name}</td>;
         }
         if (key === constants.CATEGORY_KEY) {
-            return <td style={{ maxWidth: '100px' }}>{name}</td>;
+            return <td key={key} title={name} style={{ maxWidth: '100px' }}>{name}</td>;
         }
         if (key === constants.QUANTITY_KEY) {
             return (
-                <td>
+                <td key={key}>
                     <div className="cell-item-container">
                         <Form.Control defaultValue={quantity}
                             inputMode="numeric"
@@ -217,7 +221,7 @@ const Shopping = () => {
         }
         if (key === constants.EDIT_KEY) {
             return (
-                <td style={{ padding: '5px' }}>
+                <td key={key} title={constants.EDIT_KEY.toLowerCase()} style={{ padding: '5px' }}>
                     <Button className="icon-button" onClick={() => handleEditAliment(id, name)}>
                         <img src={editIcon} alt=""></img>
                     </Button>
@@ -226,7 +230,7 @@ const Shopping = () => {
         }
         if (key === constants.REMOVE_KEY) {
             return (
-                <td style={{ padding: '5px' }}>
+                <td key={key} title={constants.REMOVE_KEY.toLowerCase()} style={{ padding: '5px' }}>
                     <Button className="icon-button" onClick={() => handleRemoveAliment(id, name)}>
                         <img src={deleteIcon} alt=""></img>
                     </Button>
@@ -248,7 +252,7 @@ const Shopping = () => {
                                     <Form.Control type="text" />
                                     <Button className="thirty-percent" type="submit" variant="success">Add</Button>
                                     <Button className="thirty-percent" onClick={() => setIsShowOnlyPositive((prev) => !prev)}>{isShowOnlyPositive ? "Show all" : "Hide zero"}</Button>
-                                    <Button className="thirty-percent restart" onClick={(e) => handleResetAll(e)}>Reset all</Button>
+                                    <Button className="thirty-percent restart" onClick={() => handleResetAll()}>Reset all</Button>
                                 </Form>
                                 } {tableData &&
                                     <Table striped bordered hover responsive>
