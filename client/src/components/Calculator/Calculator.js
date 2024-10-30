@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { post, get } from "../../api";
-import { Form, Button, Row } from "react-bootstrap";
-import "./Calculator.css"
+import { Button, Form, Row } from "react-bootstrap";
+import { get, post } from "../../api";
 import Spinner from "../Spinner";
 import { handleError } from "../errorHandler";
+import "./Calculator.css";
 
 const Calculator = () => {
   const [input, setInput] = useState("");

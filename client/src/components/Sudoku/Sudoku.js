@@ -1,12 +1,12 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import { post, get } from "../../api";
-import { Form, Button } from "react-bootstrap";
-import FileImporter from "../FileImporter";
-import SudokuGrid from "./SudokuGrid";
-import "./Sudoku.css";
-import Spinner from "../Spinner";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Button, Form } from "react-bootstrap";
+import { get, post } from "../../api";
 import { TIMEOUT_DELAY } from "../../constants";
 import { handleError } from "../errorHandler";
+import FileImporter from "../FileImporter";
+import Spinner from "../Spinner";
+import "./Sudoku.css";
+import SudokuGrid from "./SudokuGrid";
 
 const Sudoku = () => {
     const [sudoku, setSudoku] = useState("");

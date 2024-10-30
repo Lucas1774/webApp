@@ -1,13 +1,13 @@
 package com.lucas.server.components.sudoku;
 
-import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.Collections;
+
+import org.springframework.stereotype.Service;
 
 @Service
 public class Generator {

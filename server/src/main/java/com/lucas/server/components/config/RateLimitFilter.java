@@ -31,7 +31,6 @@ public class RateLimitFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         String clientIP = request.getRemoteAddr();
         long now = Instant.now().getEpochSecond();
-        
         synchronized (requestTimestamps) {
             List<Long> clientRequests = requestTimestamps.computeIfAbsent(clientIP, k -> new ArrayList<>());
             clientRequests.removeIf(timestamp -> timestamp < now - 1);

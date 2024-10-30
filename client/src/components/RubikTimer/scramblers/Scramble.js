@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { Scramble as threeScrambler } from "./threeScrambler";
-import { Scramble as twoScrambler } from "./twoScrambler";
-import { Scramble as fourScrambler } from "./fourScrambler";
-import { Scramble as fiveScrambler } from "./fiveScrambler";
-import { Scramble as sevenScrambler } from "./sevenScrambler";
-import { Scramble as sixScrambler } from "./sixScrambler";
+import { PropTypes } from "prop-types";
+import React, { useEffect, useState } from "react";
+import * as constants from "../../../constants";
 import { Scramble as bldScrambler } from "./bldScrambler";
-import { Scramble as fmcScrambler } from "./fmcScrambler";
 import { Scramble as clockScrambler } from "./clockScrambler";
+import { Scramble as fiveScrambler } from "./fiveScrambler";
+import { Scramble as fmcScrambler } from "./fmcScrambler";
+import { Scramble as fourScrambler } from "./fourScrambler";
 import { Scramble as megaScrambler } from "./megaScrambler";
 import { Scramble as pyraminxScrambler } from "./pyraScrambler";
+import { Scramble as sevenScrambler } from "./sevenScrambler";
+import { Scramble as sixScrambler } from "./sixScrambler";
 import { Scramble as skewbScrambler } from "./skewbScrambler";
-import * as constants from "../../../constants";
-import { PropTypes } from "prop-types";
+import { Scramble as threeScrambler } from "./threeScrambler";
+import { Scramble as twoScrambler } from "./twoScrambler";
 
 const Scramble = ({ isNewScramble, onScrambleChange, puzzle, display, quantity }) => {
     const [scramble, setScramble] = useState("");

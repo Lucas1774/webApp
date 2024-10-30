@@ -1,15 +1,15 @@
-import React, { useEffect, useState, useCallback } from "react";
-import useDebounce from "../../hooks/useDebounce";
+import React, { useCallback, useEffect, useState } from "react";
+import { Button, Form, Table } from "react-bootstrap";
 import { get, post } from "../../api";
-import { Table, Button, Form } from "react-bootstrap";
-import "./Shopping.css"
-import Spinner from "../Spinner";
-import LoginForm from "../LoginForm";
-import deleteIcon from "../../assets/images/bin.png"
-import resetIcon from "../../assets/images/remove.png"
-import editIcon from "../../assets/images/edit.png"
+import deleteIcon from "../../assets/images/bin.png";
+import editIcon from "../../assets/images/edit.png";
+import resetIcon from "../../assets/images/remove.png";
 import * as constants from "../../constants";
+import useDebounce from "../../hooks/useDebounce";
 import { handleError } from "../errorHandler";
+import LoginForm from "../LoginForm";
+import Spinner from "../Spinner";
+import "./Shopping.css";
 
 const Shopping = () => {
     const [tableData, setTableData] = useState(null);

@@ -1,6 +1,6 @@
 import {
-    Scramble as threeScramble,
-    SCRAMBLE_LENGTH as THREE_SCRAMBLE_LENGTH
+    SCRAMBLE_LENGTH as THREE_SCRAMBLE_LENGTH,
+    Scramble as threeScramble
 } from "./threeScrambler";
 
 const LAST_TWO = [

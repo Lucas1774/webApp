@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, createRef } from "react";
 import PropTypes from "prop-types";
+import React, { createRef, useEffect, useRef, useState } from "react";
 
 const SudokuGrid = ({ sudokuString, onSudokuChange, solved }) => {
     const [focusedIndex, setFocusedIndex] = useState(null);

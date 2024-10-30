@@ -1,6 +1,6 @@
 import {
-    SCRAMBLE_LENGTH as THREE_SCRAMBLE_LENGTH,
-    SCRAMBLE_MOVES
+    SCRAMBLE_MOVES,
+    SCRAMBLE_LENGTH as THREE_SCRAMBLE_LENGTH
 } from "./threeScrambler";
 
 export const FMC_PREFIX = "R' U' F "

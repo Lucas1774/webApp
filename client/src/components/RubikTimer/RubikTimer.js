@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Form, Button } from "react-bootstrap";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Button, Form } from "react-bootstrap";
 import * as constants from "../../constants";
-import Scramble from "./scramblers/Scramble";
-import { renderStats, formatTime } from "./statsHelper";
 import Popup from "./Popup";
 import "./RubikTimer.css";
+import Scramble from "./scramblers/Scramble";
+import { formatTime, renderStats } from "./statsHelper";
 const RubikTimer = () => {
     // IDENTIFIERS
     const isAndroid = /Android/i.test(navigator.userAgent);
