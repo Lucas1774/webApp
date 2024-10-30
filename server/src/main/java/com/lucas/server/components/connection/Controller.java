@@ -88,37 +88,37 @@ public class Controller {
                 });
     }
 
-    @PostMapping("/new-aliment")
-    public ResponseEntity<String> postAliment(HttpServletRequest request, @RequestBody String item) {
+    @PostMapping("/new-product")
+    public ResponseEntity<String> postProduct(HttpServletRequest request, @RequestBody String item) {
         return this.handleRequest(() -> {
-            dao.insertAliment(item.replace("\"", ""), this.retrieveUsername(request.getCookies()));
-            return "Aliment added";
+            dao.insertProduct(item.replace("\"", ""), this.retrieveUsername(request.getCookies()));
+            return "Product added";
         });
     }
 
-    @PostMapping("/update-aliment-quantity")
-    public ResponseEntity<String> updateAlimentQuantity(HttpServletRequest request,
+    @PostMapping("/update-product-quantity")
+    public ResponseEntity<String> updateProductQuantity(HttpServletRequest request,
             @RequestBody Map<String, Object> data) {
         return this.handleRequest(() -> {
-            dao.updateAlimentQuantity((int) data.get("id"), (int) data.get("quantity"),
+            dao.updateProductQuantity((int) data.get("id"), (int) data.get("quantity"),
                     this.retrieveUsername(request.getCookies()));
-            return "Aliment " + data.get("name") + " updated";
+            return "Product " + data.get("name") + " updated";
         });
     }
 
-    @PostMapping("/update-all-aliment-quantity")
-    public ResponseEntity<String> updateAllAlimentQuantity(HttpServletRequest request) {
+    @PostMapping("/update-all-product-quantity")
+    public ResponseEntity<String> updateAllProductQuantity(HttpServletRequest request) {
         return this.handleRequest(() -> {
-            dao.updateAllAlimentQuantity(this.retrieveUsername(request.getCookies()));
+            dao.updateAllProductQuantity(this.retrieveUsername(request.getCookies()));
             return "All quantities were set to 0";
         });
     }
 
-    @PostMapping("/remove-aliment")
-    public ResponseEntity<String> removeAliment(HttpServletRequest request, @RequestBody Map<String, Object> data) {
+    @PostMapping("/remove-product")
+    public ResponseEntity<String> removeProduct(HttpServletRequest request, @RequestBody Map<String, Object> data) {
         return this.handleRequest(() -> {
-            dao.removeAliment((int) data.get("id"), this.retrieveUsername(request.getCookies()));
-            return "Aliment " + data.get("name") + " removed";
+            dao.removeProduct((int) data.get("id"), this.retrieveUsername(request.getCookies()));
+            return "Product " + data.get("name") + " removed";
         });
     }
 

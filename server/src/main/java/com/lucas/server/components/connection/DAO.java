@@ -69,8 +69,8 @@ public class DAO {
 
     public List<ShoppingItem> getShoppingItems(String username) throws DataAccessException {
         String sql = "SELECT a.id, a.name, s.quantity "
-                + "FROM aliments a "
-                + "INNER JOIN shopping s ON s.aliment_id = a.id "
+                + "FROM products a "
+                + "INNER JOIN shopping s ON s.product_id = a.id "
                 + "WHERE s.user_id = (SELECT id FROM users WHERE username = :username)";
         MapSqlParameterSource params = new MapSqlParameterSource("username", username);
         return this.jdbcTemplate.query(
@@ -83,25 +83,25 @@ public class DAO {
     }
 
     @Transactional
-    public void insertAliment(String aliment, String username) throws DataAccessException {
-        String insertAlimentSql = "INSERT INTO aliments (name) "
-                + "SELECT :aliment "
-                + "WHERE NOT EXISTS (SELECT 1 FROM aliments WHERE name = :aliment)";
-        String assignAlimentSql = "INSERT INTO shopping (aliment_id, user_id, quantity) "
+    public void insertProduct(String product, String username) throws DataAccessException {
+        String insertProductSql = "INSERT INTO products (name) "
+                + "SELECT :product "
+                + "WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = :product)";
+        String assignProductSql = "INSERT INTO shopping (product_id, user_id, quantity) "
                 + "VALUES ("
-                + "(SELECT id FROM aliments WHERE name = :aliment),"
+                + "(SELECT id FROM products WHERE name = :product),"
                 + "(SELECT id FROM users WHERE username = :username),"
                 + "0)";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
-        parameters.addValue("aliment", aliment);
+        parameters.addValue("product", product);
         parameters.addValue("username", username);
-        this.jdbcTemplate.update(insertAlimentSql, parameters);
-        this.jdbcTemplate.update(assignAlimentSql, parameters);
+        this.jdbcTemplate.update(insertProductSql, parameters);
+        this.jdbcTemplate.update(assignProductSql, parameters);
     }
 
-    public void updateAlimentQuantity(int id, int quantity, String username) throws DataAccessException {
+    public void updateProductQuantity(int id, int quantity, String username) throws DataAccessException {
         String sql = "UPDATE shopping SET quantity = :quantity "
-                + "WHERE aliment_id = :id "
+                + "WHERE product_id = :id "
                 + "AND user_id = (SELECT id FROM users WHERE username = :username)";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.addValue("id", id);
@@ -110,7 +110,7 @@ public class DAO {
         this.jdbcTemplate.update(sql, parameters);
     }
 
-    public void updateAllAlimentQuantity(String username) {
+    public void updateAllProductQuantity(String username) {
         String sql = "UPDATE shopping SET quantity = 0 "
                 + "WHERE user_id = (SELECT id FROM users WHERE username = :username)";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
@@ -119,18 +119,18 @@ public class DAO {
     }
 
     @Transactional
-    public void removeAliment(int id, String username) throws DataAccessException {
+    public void removeProduct(int id, String username) throws DataAccessException {
         String removeFromShoppingSql = "DELETE FROM shopping "
-                + "WHERE aliment_id = :aliment "
+                + "WHERE product_id = :product "
                 + "AND user_id = (SELECT id FROM users WHERE username = :username)";
-        String removeFromAlimentsSql = "DELETE FROM aliments "
-                + "WHERE id = :aliment AND NOT EXISTS ( "
+        String removeFromProductsSql = "DELETE FROM products "
+                + "WHERE id = :product AND NOT EXISTS ( "
                 + "    SELECT 1 FROM shopping "
-                + "    WHERE aliment_id = :aliment)";
+                + "    WHERE product_id = :product)";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
-        parameters.addValue("aliment", id);
+        parameters.addValue("product", id);
         parameters.addValue("username", username);
         this.jdbcTemplate.update(removeFromShoppingSql, parameters);
-        this.jdbcTemplate.update(removeFromAlimentsSql, parameters);
+        this.jdbcTemplate.update(removeFromProductsSql, parameters);
     }
 }

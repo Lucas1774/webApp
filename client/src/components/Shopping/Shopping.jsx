@@ -18,7 +18,7 @@ const Shopping = () => {
     const [message, setMessage] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isLoginFormVisible, setIsLoginFormVisible] = useState(false);
-    const [isAddAlimentVisible, setIsAddAlimentVisible] = useState(false);
+    const [isAddProductVisible, setIsAddProductVisible] = useState(false);
     const [filters, setFilters] = useState({});
     const [order, setOrder] = useState({ key: null, order: constants.DESC })
     const [isShowOnlyPositive, setIsShowOnlyPositive] = useState(false);
@@ -64,7 +64,7 @@ const Shopping = () => {
             handleError("Error fetching data", error);
         } finally {
             setIsLoading(false);
-            setIsAddAlimentVisible(true);
+            setIsAddProductVisible(true);
         }
     };
 
@@ -89,22 +89,22 @@ const Shopping = () => {
         }
     }
 
-    const updateAliment = useCallback(async (value, id, name) => {
+    const updateProduct = useCallback(async (value, id, name) => {
         if (isNaN(value) || parseInt(value) < 0) {
             return;
         }
-        makeGenericRequest(() => post('/update-aliment-quantity', { id, name, quantity: parseInt(value) }), () => {
+        makeGenericRequest(() => post('/update-product-quantity', { id, name, quantity: parseInt(value) }), () => {
             setIsLoading(true);
-            setIsAddAlimentVisible(false);
+            setIsAddProductVisible(false);
             getData();
         });
     }, []);
 
     useEffect(() => {
         if (debouncedValue?.value != null && debouncedValue?.rowId != null && debouncedValue?.rowName != null) {
-            updateAliment(debouncedValue.value, debouncedValue.rowId, debouncedValue.rowName);
+            updateProduct(debouncedValue.value, debouncedValue.rowId, debouncedValue.rowName);
         }
-    }, [debouncedValue, updateAliment]);
+    }, [debouncedValue, updateProduct]);
 
     const handleLoginSubmit = async (event) => {
         event.preventDefault();
@@ -128,34 +128,34 @@ const Shopping = () => {
     };
 
     const handleResetAll = async () => {
-        makeGenericRequest(() => post('/update-all-aliment-quantity', null), () => {
+        makeGenericRequest(() => post('/update-all-product-quantity', null), () => {
             setIsLoading(true);
-            setIsAddAlimentVisible(false);
+            setIsAddProductVisible(false);
             getData();
         });
     }
 
-    const handleAddAlimentSubmit = async (event) => {
+    const handleAddProductSubmit = async (event) => {
         event.preventDefault();
         const name = event.target[0].value.trim();
         if (!name) {
             return;
         }
-        makeGenericRequest(() => post('/new-aliment', name), () => {
+        makeGenericRequest(() => post('/new-product', name), () => {
             setIsLoading(true);
-            setIsAddAlimentVisible(false);
+            setIsAddProductVisible(false);
             getData();
         });
     };
 
-    const handleEditAliment = () => {
+    const handleEditProduct = () => {
         // TODO: implement me
     }
 
-    const handleRemoveAliment = async (id, name) => {
-        makeGenericRequest(() => post('/remove-aliment', { id, name }), () => {
+    const handleRemoveProduct = async (id, name) => {
+        makeGenericRequest(() => post('/remove-product', { id, name }), () => {
             setIsLoading(true);
-            setIsAddAlimentVisible(false);
+            setIsAddProductVisible(false);
             getData();
         });
     }
@@ -210,7 +210,7 @@ const Shopping = () => {
                         />
                         <Button className="icon-button" onClick={() => {
                             if (quantity !== 0) {
-                                updateAliment(0, id, name)
+                                updateProduct(0, id, name)
                             }
                         }}>
                             <img src={resetIcon} alt=""></img>
@@ -222,7 +222,7 @@ const Shopping = () => {
         if (key === constants.EDIT_KEY) {
             return (
                 <td key={key} title={constants.EDIT_KEY.toLowerCase()} style={{ padding: '5px' }}>
-                    <Button className="icon-button" onClick={() => handleEditAliment(id, name)}>
+                    <Button className="icon-button" onClick={() => handleEditProduct(id, name)}>
                         <img src={editIcon} alt=""></img>
                     </Button>
                 </td>
@@ -231,7 +231,7 @@ const Shopping = () => {
         if (key === constants.REMOVE_KEY) {
             return (
                 <td key={key} title={constants.REMOVE_KEY.toLowerCase()} style={{ padding: '5px' }}>
-                    <Button className="icon-button" onClick={() => handleRemoveAliment(id, name)}>
+                    <Button className="icon-button" onClick={() => handleRemoveProduct(id, name)}>
                         <img src={deleteIcon} alt=""></img>
                     </Button>
                 </td>
@@ -248,7 +248,7 @@ const Shopping = () => {
                     }} /> :
                         isLoading ? <Spinner /> :
                             <>
-                                {isAddAlimentVisible && <Form onSubmit={(e) => handleAddAlimentSubmit(e)}>
+                                {isAddProductVisible && <Form onSubmit={(e) => handleAddProductSubmit(e)}>
                                     <Form.Control type="text" />
                                     <Button className="thirty-percent" type="submit" variant="success">Add</Button>
                                     <Button className="thirty-percent" onClick={() => setIsShowOnlyPositive((prev) => !prev)}>{isShowOnlyPositive ? "Show all" : "Hide zero"}</Button>

@@ -2,7 +2,7 @@ CREATE SCHEMA `my_first_database` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_
 USE `my_first_database` ;
 
 
-CREATE TABLE `my_first_database`.`aliments` (
+CREATE TABLE `my_first_database`.`products` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(50) NOT NULL,
   PRIMARY KEY (`id`),
@@ -24,10 +24,10 @@ INSERT INTO `my_first_database`.`my_table` (`id`, `ans`, `text`) VALUES (1, NULL
 CREATE TABLE `my_first_database`.`shopping` (
   `id` int NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL,
-  `aliment_id` int NOT NULL,
+  `product_id` int NOT NULL,
   `quantity` int NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `user_aliment_UNIQUE` (`user_id`, `aliment_id`)
+  UNIQUE KEY `user_product_UNIQUE` (`user_id`, `product_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 

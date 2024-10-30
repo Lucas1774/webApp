@@ -1,5 +1,5 @@
 BEGIN
-    CREATE TABLE aliments (
+    CREATE TABLE products (
         id INT IDENTITY(1,1) PRIMARY KEY,
         name VARCHAR(50) NOT NULL UNIQUE
     );
@@ -22,9 +22,9 @@ BEGIN
     CREATE TABLE shopping (
         id INT IDENTITY(1,1) PRIMARY KEY,
         user_id INT NOT NULL,
-        aliment_id INT NOT NULL,
+        product_id INT NOT NULL,
         quantity INT NOT NULL
-        CONSTRAINT unique_user_aliment UNIQUE (user_id, aliment_id)
+        CONSTRAINT unique_user_product UNIQUE (user_id, product_id)
     );
 END;
 GO
