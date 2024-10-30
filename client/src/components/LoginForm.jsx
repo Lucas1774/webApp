@@ -1,15 +1,13 @@
+import { Button, Form } from 'react-bootstrap';
+
 const LoginForm = ({ onSubmit }) => {
 
     return (
-        <form onSubmit={onSubmit}>
-            <div>
-                <input
-                    type="password"
-                />
-            </div>
-            <button type="submit" value="validate">Validate</button>
-            <button type="submit" value="continue">Continue as Guest</button>
-        </form>
+        <Form onSubmit={onSubmit}>
+            <Form.Control type="password" />
+            <Button className="fifty-percent" type="submit" variant="success" value="validate">Validate</Button>
+            <Button className="fifty-percent" type="submit" value="continue">Use as Guest</Button>
+        </Form>
     );
 };
 
