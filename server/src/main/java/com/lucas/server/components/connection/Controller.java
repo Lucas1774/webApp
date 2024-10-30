@@ -83,7 +83,7 @@ public class Controller {
         return this.handleRequest(
                 () -> {
                     List<ShoppingItem> items = dao
-                            .getShoppingItems(this.retrieveAuthCookie(request.getCookies()) != null ? ADMIN : DEFAULT);
+                            .getShoppingItems(this.retrieveUsername(request.getCookies()));
                     return new ObjectMapper().writeValueAsString(items);
                 });
     }
@@ -91,25 +91,33 @@ public class Controller {
     @PostMapping("/new-aliment")
     public ResponseEntity<String> postAliment(HttpServletRequest request, @RequestBody String item) {
         return this.handleRequest(() -> {
-            dao.insertAliment(item.replace("\"", ""),
-                    this.retrieveAuthCookie(request.getCookies()) != null ? ADMIN : DEFAULT);
+            dao.insertAliment(item.replace("\"", ""), this.retrieveUsername(request.getCookies()));
             return "Aliment added";
         });
     }
 
     @PostMapping("/update-aliment-quantity")
-    public ResponseEntity<String> updateAlimentQuantity(@RequestBody Map<String, Object> data) {
+    public ResponseEntity<String> updateAlimentQuantity(HttpServletRequest request,
+            @RequestBody Map<String, Object> data) {
         return this.handleRequest(() -> {
-            dao.updateAlimentQuantity((int) data.get("id"), (int) data.get("quantity"));
+            dao.updateAlimentQuantity((int) data.get("id"), (int) data.get("quantity"),
+                    this.retrieveUsername(request.getCookies()));
             return "Aliment " + data.get("name") + " updated";
+        });
+    }
+
+    @PostMapping("/update-all-aliment-quantity")
+    public ResponseEntity<String> updateAllAlimentQuantity(HttpServletRequest request) {
+        return this.handleRequest(() -> {
+            dao.updateAllAlimentQuantity(this.retrieveUsername(request.getCookies()));
+            return "All quantities were set to 0";
         });
     }
 
     @PostMapping("/remove-aliment")
     public ResponseEntity<String> removeAliment(HttpServletRequest request, @RequestBody Map<String, Object> data) {
         return this.handleRequest(() -> {
-            dao.removeAliment((int) data.get("id"),
-                    this.retrieveAuthCookie(request.getCookies()) != null ? ADMIN : DEFAULT);
+            dao.removeAliment((int) data.get("id"), this.retrieveUsername(request.getCookies()));
             return "Aliment " + data.get("name") + " removed";
         });
     }
@@ -238,5 +246,9 @@ public class Controller {
             }
         }
         return null;
+    }
+
+    private String retrieveUsername(Cookie[] cookies) {
+        return this.retrieveAuthCookie(cookies) != null ? ADMIN : DEFAULT;
     }
 }

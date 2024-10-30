@@ -99,11 +99,22 @@ public class DAO {
         this.jdbcTemplate.update(assignAlimentSql, parameters);
     }
 
-    public void updateAlimentQuantity(int id, int quantity) throws DataAccessException {
-        String sql = "UPDATE shopping SET quantity = :quantity WHERE aliment_id = :id";
+    public void updateAlimentQuantity(int id, int quantity, String username) throws DataAccessException {
+        String sql = "UPDATE shopping SET quantity = :quantity "
+                + "WHERE aliment_id = :id "
+                + "AND user_id = (SELECT id FROM users WHERE username = :username)";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.addValue("id", id);
         parameters.addValue("quantity", quantity);
+        parameters.addValue("username", username);
+        this.jdbcTemplate.update(sql, parameters);
+    }
+
+    public void updateAllAlimentQuantity(String username) {
+        String sql = "UPDATE shopping SET quantity = 0 "
+                + "WHERE user_id = (SELECT id FROM users WHERE username = :username)";
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.addValue("username", username);
         this.jdbcTemplate.update(sql, parameters);
     }
 
