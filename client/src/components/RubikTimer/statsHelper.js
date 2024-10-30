@@ -1,4 +1,4 @@
-import { EMPTY_TIMER, DNF } from "../../constants";
+import { DNF, EMPTY_TIMER } from "../../constants";
 
 export const formatTime = (time) => {
     if (time === Infinity) {

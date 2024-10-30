@@ -1,5 +1,5 @@
-import { SCRAMBLE_MOVES as THREE_SCRAMBLE_MOVES } from "./threeScrambler";
 import { FOUR_SCRAMBLE_MOVES } from "./fiveScrambler";
+import { SCRAMBLE_MOVES as THREE_SCRAMBLE_MOVES } from "./threeScrambler";
 
 export const SCRAMBLE_LENGTH = 80;
 const SCRAMBLE_MOVES = [
@@ -96,7 +96,7 @@ export const Scramble = () => {
         }
         lastTurnWidth = turnWidth;
         secondTolastMoveIndex = lastMoveIndex;
-        lastMoveIndex =  turnWidth !== 2 ? turnLayer : turnLayer * 2;
+        lastMoveIndex = turnWidth !== 2 ? turnLayer : turnLayer * 2;
     }
     return scramble;
 };

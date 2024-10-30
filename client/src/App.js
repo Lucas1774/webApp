@@ -1,12 +1,12 @@
 import React from "react";
 import { Col, Row } from "react-bootstrap";
+import "./App.css";
 import Calculator from "./components/Calculator/Calculator";
-import SecretSanta from "./components/SecretSanta/SecretSanta";
 import ParsedAbout from "./components/ParsedAbout/ParsedAbout";
-import Sudoku from "./components/Sudoku/Sudoku";
 import RubikTimer from "./components/RubikTimer/RubikTimer";
+import SecretSanta from "./components/SecretSanta/SecretSanta";
 import Shopping from "./components/Shopping/Shopping";
-import "./App.css"
+import Sudoku from "./components/Sudoku/Sudoku";
 
 const App = () => {
   return (

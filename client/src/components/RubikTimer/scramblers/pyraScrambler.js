@@ -1,6 +1,6 @@
 import {
-    Scramble as skewbScramble,
-    SCRAMBLE_LENGTH as SKEWB_SCRAMBLE_LENGTH
+    SCRAMBLE_LENGTH as SKEWB_SCRAMBLE_LENGTH,
+    Scramble as skewbScramble
 } from "./skewbScrambler";
 
 export const SCRAMBLE_LENGTH = SKEWB_SCRAMBLE_LENGTH;

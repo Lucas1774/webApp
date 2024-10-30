@@ -1,7 +1,7 @@
 import {
-    Scramble as threeScramble,
     SCRAMBLE_LENGTH as THREE_SCRAMBLE_LENGTH,
-    SCRAMBLE_MOVES as THREE_SCRAMBLE_MOVES
+    SCRAMBLE_MOVES as THREE_SCRAMBLE_MOVES,
+    Scramble as threeScramble
 } from "./threeScrambler";
 import { SCRAMBLE_LENGTH as TWO_SCRAMBLER_LENGTH } from "./twoScrambler";
 

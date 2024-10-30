@@ -1,8 +1,8 @@
-import { useState, useRef } from "react";
-import { Button } from "react-bootstrap";
-import { renderStats, renderAllTimes } from "./statsHelper";
-import icon from "../../assets/images/copy.png"
 import { PropTypes } from "prop-types";
+import { useRef, useState } from "react";
+import { Button } from "react-bootstrap";
+import icon from "../../assets/images/copy.png";
+import { renderAllTimes, renderStats } from "./statsHelper";
 
 const Popup = ({ content, justEditLast = false, onPopupClose }) => {
     const recentTimes = content.recentTimes;

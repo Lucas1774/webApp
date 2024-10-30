@@ -1,17 +1,17 @@
 import { render, screen, within } from "@testing-library/react";
-import Scramble from "./scramblers/Scramble";
-import { renderStats } from "./statsHelper";
 import * as constants from "../../constants";
-import { SCRAMBLE_LENGTH as THREE_SCRAMBLE_LENGTH } from "./scramblers/threeScrambler";
-import { SCRAMBLE_LENGTH as TWO_SCRAMBLE_LENGTH } from "./scramblers/twoScrambler";
-import { SCRAMBLE_LENGTH as FOUR_SCRAMBLE_LENGTH } from "./scramblers/fourScrambler";
 import { SCRAMBLE_LENGTH as FIVE_SCRAMBLE_LENGTH } from "./scramblers/fiveScrambler";
-import { SCRAMBLE_LENGTH as SEVEN_SCRAMBLE_LENGTH } from "./scramblers/sevenScrambler";
-import { SCRAMBLE_LENGTH as SIX_SCRAMBLE_LENGTH } from "./scramblers/sixScrambler";
-import { SCRAMBLE_LENGTH as FMC_SCRAMBLE_LENGTH, FMC_PREFIX } from "./scramblers/fmcScrambler";
+import { FMC_PREFIX, SCRAMBLE_LENGTH as FMC_SCRAMBLE_LENGTH } from "./scramblers/fmcScrambler";
+import { SCRAMBLE_LENGTH as FOUR_SCRAMBLE_LENGTH } from "./scramblers/fourScrambler";
 import { SCRAMBLE_LENGTH as MEGAMINX_SCRAMBLE_LENGTH } from "./scramblers/megaScrambler";
 import { SCRAMBLE_LENGTH as PYRAMINX_SCRAMBLE_LENGTH } from "./scramblers/pyraScrambler";
+import Scramble from "./scramblers/Scramble";
+import { SCRAMBLE_LENGTH as SEVEN_SCRAMBLE_LENGTH } from "./scramblers/sevenScrambler";
+import { SCRAMBLE_LENGTH as SIX_SCRAMBLE_LENGTH } from "./scramblers/sixScrambler";
 import { SCRAMBLE_LENGTH as SKEWB_SCRAMBLE_LENGTH } from "./scramblers/skewbScrambler";
+import { SCRAMBLE_LENGTH as THREE_SCRAMBLE_LENGTH } from "./scramblers/threeScrambler";
+import { SCRAMBLE_LENGTH as TWO_SCRAMBLE_LENGTH } from "./scramblers/twoScrambler";
+import { renderStats } from "./statsHelper";
 
 const NUMBER_OF_RUNS = 1000;
 const LIKELINESS_RELATIVE_ERROR = 0.05
