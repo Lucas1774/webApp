@@ -63,6 +63,9 @@ public class Controller {
             cookie.setPath("/");
             cookie.setMaxAge(31536000);
             cookie.setSecure(this.secure);
+            if (this.secure) {
+                cookie.setAttribute("SameSite", "None");
+            }
             response.addCookie(cookie);
             return ResponseEntity.ok("Granted admin access");
         }
