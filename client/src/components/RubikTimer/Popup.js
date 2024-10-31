@@ -70,7 +70,7 @@ const Popup = ({ content, justEditLast = false, onPopupClose }) => {
 
     return (
         <div>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div className="popup-header">
                 {!isEditTimeVisible && !isStatisticSelected
                     ? <Button className="popup-icon" onClick={selectContent}>
                         <img src={icon} alt="" width={"20x"} height={"20px"}></img>

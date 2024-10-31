@@ -9,16 +9,20 @@ import useDebounce from "../../hooks/useDebounce";
 import { handleError } from "../errorHandler";
 import LoginForm from "../LoginForm";
 import Spinner from "../Spinner";
+import Popup from "./Popup";
 import "./Shopping.css";
 
 const Shopping = () => {
     const [tableData, setTableData] = useState(null);
+    const [categories, setCategories] = useState([]);
     const [quantityInputValue, setQuantityInputValue] = useState({});
     const [filterValue, setFilterValue] = useState({});
     const [message, setMessage] = useState(null);
+    const [selectedProductData, setSelectedProductData] = useState({})
     const [isLoading, setIsLoading] = useState(true);
     const [isLoginFormVisible, setIsLoginFormVisible] = useState(false);
     const [isAddProductVisible, setIsAddProductVisible] = useState(false);
+    const [isPopupVisible, setIsPopupVisible] = useState(false);
     const [filters, setFilters] = useState({});
     const [order, setOrder] = useState({ key: null, order: constants.DESC })
     const [isShowOnlyPositive, setIsShowOnlyPositive] = useState(false);
@@ -52,6 +56,7 @@ const Shopping = () => {
                 setIsLoading(false);
             }
         };
+
         checkAuth();
     }, []);
 
@@ -89,7 +94,7 @@ const Shopping = () => {
         }
     }
 
-    const updateProduct = useCallback(async (value, id, name) => {
+    const updateProductQuantity = useCallback(async (value, id, name) => {
         if (isNaN(value) || parseInt(value) < 0) {
             return;
         }
@@ -100,11 +105,19 @@ const Shopping = () => {
         });
     }, []);
 
+    const updateProduct = async (id, name, categoryId, category) => {
+        makeGenericRequest(() => post('/update-product', { id, name, categoryId, category }), () => {
+            setIsLoading(true);
+            setIsPopupVisible(false);
+            getData();
+        });
+    }
+
     useEffect(() => {
         if (debouncedValue?.value != null && debouncedValue?.rowId != null && debouncedValue?.rowName != null) {
-            updateProduct(debouncedValue.value, debouncedValue.rowId, debouncedValue.rowName);
+            updateProductQuantity(debouncedValue.value, debouncedValue.rowId, debouncedValue.rowName);
         }
-    }, [debouncedValue, updateProduct]);
+    }, [debouncedValue, updateProductQuantity]);
 
     const handleLoginSubmit = async (event) => {
         event.preventDefault();
@@ -148,8 +161,26 @@ const Shopping = () => {
         });
     };
 
-    const handleEditProduct = () => {
-        // TODO: implement me
+    const handleEditProduct = (id, name, category) => {
+        const getPossibleCategories = async () => {
+            setIsLoading(true);
+            try {
+                const response = await get("/get-possible-categories");
+                setCategories(response.data);
+            } catch (error) {
+                handleError("Error fetching data", error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        getPossibleCategories();
+        setSelectedProductData({
+            [constants.ID_KEY]: id,
+            [constants.NAME_KEY]: name,
+            [constants.CATEGORY_KEY]: category
+        });
+        setIsPopupVisible(true);
     }
 
     const handleRemoveProduct = async (id, name) => {
@@ -158,6 +189,16 @@ const Shopping = () => {
             setIsAddProductVisible(false);
             getData();
         });
+    }
+
+    const handleOrderClick = (key) => {
+        const actualKey = key === constants.CATEGORY_KEY ? constants.CATEGORY_ID_KEY : key; 
+        setOrder((prevOrder) => ({
+            key: actualKey,
+            order: prevOrder.key === actualKey
+                ? (prevOrder.order === constants.DESC ? constants.ASC : constants.DESC)
+                : constants.ASC
+        }));
     }
 
     const applyFilters = (data, filters) => {
@@ -187,12 +228,12 @@ const Shopping = () => {
         });
     };
 
-    const renderColumn = (key, id, name, quantity) => {
+    const renderColumn = (key, id, name, categoryId, category, quantity) => {
         if (key === constants.NAME_KEY) {
             return <td key={key} title={name} style={{ maxWidth: '100px' }}>{name}</td>;
         }
         if (key === constants.CATEGORY_KEY) {
-            return <td key={key} title={name} style={{ maxWidth: '100px' }}>{name}</td>;
+            return <td key={key} title={category} style={{ maxWidth: '100px' }}>{category}</td>;
         }
         if (key === constants.QUANTITY_KEY) {
             return (
@@ -210,7 +251,7 @@ const Shopping = () => {
                         />
                         <Button className="icon-button" onClick={() => {
                             if (quantity !== 0) {
-                                updateProduct(0, id, name)
+                                updateProductQuantity(0, id, name)
                             }
                         }}>
                             <img src={resetIcon} alt=""></img>
@@ -222,7 +263,7 @@ const Shopping = () => {
         if (key === constants.EDIT_KEY) {
             return (
                 <td key={key} title={constants.EDIT_KEY.toLowerCase()} style={{ padding: '5px' }}>
-                    <Button className="icon-button" onClick={() => handleEditProduct(id, name)}>
+                    <Button className="icon-button" onClick={() => handleEditProduct(id, name, { [constants.CATEGORY_ID_KEY]: categoryId, [constants.CATEGORY_KEY]: category })}>
                         <img src={editIcon} alt=""></img>
                     </Button>
                 </td>
@@ -241,17 +282,28 @@ const Shopping = () => {
 
     return (
         <><h1 id="shopping">Shopping</h1>
-            <div className="app shopping"> {
-                message ? <div>{message}</div> :
-                    isLoginFormVisible ? <LoginForm onSubmit={(e) => {
-                        handleLoginSubmit(e)
-                    }} /> :
-                        isLoading ? <Spinner /> :
-                            <>
+            <div className="app shopping"> {message ? <div>{message}</div> :
+                isLoginFormVisible ? <LoginForm onSubmit={(e) => {
+                    handleLoginSubmit(e)
+                }} /> :
+                    isLoading ? <Spinner /> :
+                        isPopupVisible
+                            ? <Popup content={selectedProductData}
+                                onSubmit={(id, name, categoryId, category) => {
+                                    setIsPopupVisible(false);
+                                    updateProduct(id, name, categoryId, category)
+                                }} onPopupClose={() => {
+                                    setSelectedProductData({});
+                                    setIsPopupVisible(false);
+                                }}
+                                categories={categories} />
+                            : <>
                                 {isAddProductVisible && <Form onSubmit={(e) => handleAddProductSubmit(e)}>
                                     <Form.Control type="text" />
                                     <Button className="thirty-percent" type="submit" variant="success">Add</Button>
-                                    <Button className="thirty-percent" onClick={() => setIsShowOnlyPositive((prev) => !prev)}>{isShowOnlyPositive ? "Show all" : "Hide zero"}</Button>
+                                    <Button className="thirty-percent" onClick={() => setIsShowOnlyPositive((prev) => !prev)}>{
+                                        isShowOnlyPositive ? "Show all" : "Hide zero"
+                                    }</Button>
                                     <Button className="thirty-percent restart" onClick={() => handleResetAll()}>Reset all</Button>
                                 </Form>
                                 } {tableData &&
@@ -272,12 +324,7 @@ const Shopping = () => {
                                                             />
                                                         )}
                                                         {constants.META.SORTABLE[key] && (
-                                                            <Button onClick={() => {
-                                                                setOrder((prevOrder) => ({
-                                                                    key: key,
-                                                                    order: prevOrder.key === key ? (prevOrder.order === constants.DESC ? constants.ASC : constants.DESC) : constants.ASC
-                                                                }));
-                                                            }}>
+                                                            <Button onClick={() => {handleOrderClick(key)}}>
                                                                 {order.key === key ? order.order === constants.ASC ? '▲' : '▼' : 'Sort'}
                                                             </Button>
                                                         )}
@@ -288,13 +335,12 @@ const Shopping = () => {
                                         <tbody>
                                             {applyOrder(applyFilters(tableData, filters), order).map((row) => {
                                                 const id = row[constants.ID_KEY];
-                                                const name = row[constants.NAME_KEY];
-                                                const quantity = row[constants.QUANTITY_KEY];
                                                 return (
                                                     <tr key={id}>
                                                         {constants.META.KEYS
                                                             .filter((key) => constants.META.VISIBLE[key])
-                                                            .map((key) => renderColumn(key, id, name, quantity))}
+                                                            .map((key) => renderColumn(key, id,
+                                                                row[constants.NAME_KEY], row[constants.CATEGORY_ID_KEY], row[constants.CATEGORY_KEY], row[constants.QUANTITY_KEY]))}
                                                     </tr>
                                                 )
                                             })}
