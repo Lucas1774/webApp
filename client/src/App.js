@@ -14,23 +14,25 @@ const App = () => {
       <ParsedAbout />
       <br></br>
     </div>
-    <Row>
-      <Col>
-        <Shopping />
-      </Col>
-      <Col>
-        <RubikTimer />
-      </Col>
-      <Col>
-        <Sudoku />
-      </Col>
-      <Col>
-        <SecretSanta />
-      </Col>
-      <Col>
-        <Calculator />
-      </Col>
-    </Row>
+      <Row>
+        <Col>
+          <Shopping />
+        </Col>
+        <Col>
+          <RubikTimer />
+        </Col>
+        <Col>
+          <Sudoku />
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <SecretSanta />
+        </Col>
+        <Col>
+          <Calculator />
+        </Col>
+      </Row>
     </>
   );
 }
