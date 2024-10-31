@@ -9,7 +9,7 @@ import Sudoku from "./components/Sudoku/Sudoku";
 
 const App = () => {
   return (
-    <Row>
+    <><Row>
       <Col>
         <Shopping />
       </Col>
@@ -19,13 +19,14 @@ const App = () => {
       <Col>
         <Sudoku />
       </Col>
-      <Col>
-        <SecretSanta />
-      </Col>
-      <Col>
-        <Calculator />
-      </Col>
-    </Row>
+    </Row><Row>
+        <Col>
+          <SecretSanta />
+        </Col>
+        <Col>
+          <Calculator />
+        </Col>
+      </Row></>
   );
 }
 
