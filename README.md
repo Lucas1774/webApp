@@ -81,6 +81,17 @@ It is also possible to edit the last time by double tapping on mobile or pressin
 The app is provided with logic to improve UX like input control (like preventing from clicking a button right after stopping the timer), screen lock prevention or orientation-based dynamic rendering.  
 As with the other apps, pressing `escape` is equivalent to clicking or pressing `reset`.
 
+### Shopping Application
+The entry-point is a login form that generates an HTTPS-only cookie and sends it back to the front end upon correct authentication.  
+From there on the cookie is used for authorization and in data queries it parametrizes a where clause.  
+The filter and quantity inputs use a debouncer to handle user input.  
+The delete button only deletes the record for this user. If no record exists for this product the product record is also deleted.  
+the `X` button is just a quicker way to set to zero. Product edition is only allowed to authorized users. Although clickable by any, since authorization is server-handled.  
+Categories don't sort by name but by category ID. This is so to create categories in an order that matches my usual supermarket.  
+The `hide zero` button is a global filter that filters out rows with 0 as quantity, and the best functionality of the app, from a real world POV.
+
+
+
 ## Conclusion
 Overall, this project demonstrates how different technologies can be combined to create a web-based application that provides a simple yet useful service. The use of React.js and Spring Boot in particular shows how front-end and back-end technologies can be used together to create a smooth and seamless user experience. This last sentence is flattering because I didn't write it.
 
