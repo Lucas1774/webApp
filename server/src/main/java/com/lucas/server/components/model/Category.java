@@ -9,15 +9,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class ShoppingItem {
-    @JsonProperty("ID")
+public class Category {
+    @JsonProperty("CATEGORY_ID")
     private int id;
     @JsonProperty("NAME")
     private String name;
-    @JsonProperty("CATEGORY_ID")
-    private Integer categoryId;
-    @JsonProperty("CATEGORY")
-    private String category;
-    @JsonProperty("QUANTITY")
-    private int quantity;
 }

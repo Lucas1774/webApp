@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.lucas.server.components.model.Category;
 import com.lucas.server.components.model.ShoppingItem;
 import com.lucas.server.components.sudoku.Sudoku;
 
@@ -68,8 +69,9 @@ public class DAO {
     }
 
     public List<ShoppingItem> getShoppingItems(String username) throws DataAccessException {
-        String sql = "SELECT a.id, a.name, s.quantity "
+        String sql = "SELECT a.id, a.name, c.id AS category_id, c.name AS category_name, s.quantity "
                 + "FROM products a "
+                + "LEFT JOIN categories c ON c.id = a.category_id "
                 + "INNER JOIN shopping s ON s.product_id = a.id "
                 + "WHERE s.user_id = (SELECT id FROM users WHERE username = :username)";
         MapSqlParameterSource params = new MapSqlParameterSource("username", username);
@@ -79,7 +81,18 @@ public class DAO {
                 (resultSet, rowNum) -> new ShoppingItem(
                         resultSet.getInt("id"),
                         resultSet.getString("name"),
+                        resultSet.getObject("category_id", Integer.class),
+                        Optional.ofNullable(resultSet.getString("category_name")).orElse(""),
                         resultSet.getInt("quantity")));
+    }
+
+    public List<Category> getPossibleCategories() throws DataAccessException {
+        String sql = "SELECT * FROM categories";
+        return this.jdbcTemplate.query(
+                sql,
+                (resultSet, rowNum) -> new Category(
+                        resultSet.getInt("id"),
+                        Optional.ofNullable(resultSet.getString("name")).orElse("")));
     }
 
     @Transactional
@@ -99,6 +112,29 @@ public class DAO {
         this.jdbcTemplate.update(assignProductSql, parameters);
     }
 
+    @Transactional
+    public void updateProduct(int id, String productName, Optional<Object> categoryId, String categoryName)
+            throws DataAccessException {
+        Integer categoryIdInt;
+        if (!categoryId.isPresent()) {
+            String insertCategorySql = "INSERT INTO categories (name) VALUES (:category)";
+            String getCategoryIdSql = "SELECT id FROM categories WHERE name = :category";
+            MapSqlParameterSource parameters = new MapSqlParameterSource();
+            parameters.addValue("category", categoryName);
+            this.jdbcTemplate.update(insertCategorySql, parameters);
+            categoryIdInt = this.jdbcTemplate.queryForObject(getCategoryIdSql, parameters, Integer.class);
+        } else {
+            categoryIdInt = (Integer) categoryId.get();
+        }
+        String updateProductSql = "UPDATE products SET name = :productName, category_id = :categoryId "
+                + "WHERE id = :id";
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.addValue("id", id);
+        parameters.addValue("productName", productName);
+        parameters.addValue("categoryId", categoryIdInt);
+        this.jdbcTemplate.update(updateProductSql, parameters);
+    }
+
     public void updateProductQuantity(int id, int quantity, String username) throws DataAccessException {
         String sql = "UPDATE shopping SET quantity = :quantity "
                 + "WHERE product_id = :id "
@@ -110,7 +146,7 @@ public class DAO {
         this.jdbcTemplate.update(sql, parameters);
     }
 
-    public void updateAllProductQuantity(String username) {
+    public void updateAllProductQuantity(String username) throws DataAccessException {
         String sql = "UPDATE shopping SET quantity = 0 "
                 + "WHERE user_id = (SELECT id FROM users WHERE username = :username)";
         MapSqlParameterSource parameters = new MapSqlParameterSource();

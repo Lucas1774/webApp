@@ -1,7 +1,16 @@
 BEGIN
-    CREATE TABLE products (
+    CREATE TABLE categories (
         id INT IDENTITY(1,1) PRIMARY KEY,
         name VARCHAR(50) NOT NULL UNIQUE
+    );
+END;
+GO
+
+BEGIN
+    CREATE TABLE products (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        name VARCHAR(50) NOT NULL UNIQUE,
+        category_id INT NULL
     );
 END;
 GO

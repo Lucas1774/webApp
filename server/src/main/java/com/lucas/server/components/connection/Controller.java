@@ -2,6 +2,7 @@ package com.lucas.server.components.connection;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.components.calculator.Solver;
+import com.lucas.server.components.model.Category;
 import com.lucas.server.components.model.ShoppingItem;
 import com.lucas.server.components.security.JwtUtil;
 import com.lucas.server.components.sudoku.Generator;
@@ -85,12 +87,19 @@ public class Controller {
 
     @GetMapping("/shopping")
     public ResponseEntity<String> getShoppingItems(HttpServletRequest request) {
-        return this.handleRequest(
-                () -> {
-                    List<ShoppingItem> items = dao
-                            .getShoppingItems(this.retrieveUsername(request.getCookies()));
-                    return new ObjectMapper().writeValueAsString(items);
-                });
+        return this.handleRequest(() -> {
+            List<ShoppingItem> items = dao
+                    .getShoppingItems(this.retrieveUsername(request.getCookies()));
+            return new ObjectMapper().writeValueAsString(items);
+        });
+    }
+
+    @GetMapping("/get-possible-categories")
+    public ResponseEntity<String> getPossibleCategories() {
+        return this.handleRequest(() -> {
+            List<Category> categories = dao.getPossibleCategories();
+            return new ObjectMapper().writeValueAsString(categories);
+        });
     }
 
     @PostMapping("/new-product")
@@ -98,6 +107,21 @@ public class Controller {
         return this.handleRequest(() -> {
             dao.insertProduct(item.replace("\"", ""), this.retrieveUsername(request.getCookies()));
             return "Product added";
+        });
+    }
+
+    @PostMapping("/update-product")
+    public ResponseEntity<String> updateProduct(HttpServletRequest request, @RequestBody Map<String, Object> data) {
+        return this.handleRequest(() -> {
+            if (ADMIN.equals(this.retrieveUsername(request.getCookies()))) {
+                dao.updateProduct((int) (data.get("id")),
+                        (String) data.get("name"),
+                        Optional.ofNullable(data.get("categoryId")),
+                        (String) data.get("category"));
+                return "Product updated";
+            } else {
+                return "Unauthorized";
+            }
         });
     }
 

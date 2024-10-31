@@ -3,6 +3,10 @@
     overflow-y: auto;
 }
 
+.app.shopping label.form-label {
+    margin: 0;
+}
+
 .app.shopping .table {
     margin: 15px 0px;
 }
