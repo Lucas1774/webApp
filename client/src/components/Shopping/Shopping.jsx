@@ -192,7 +192,7 @@ const Shopping = () => {
     }
 
     const handleOrderClick = (key) => {
-        const actualKey = key === constants.CATEGORY_KEY ? constants.CATEGORY_ID_KEY : key; 
+        const actualKey = key === constants.CATEGORY_KEY ? constants.CATEGORY_ID_KEY : key;
         setOrder((prevOrder) => ({
             key: actualKey,
             order: prevOrder.key === actualKey
@@ -314,7 +314,9 @@ const Shopping = () => {
                                                     <th key={key}>
                                                         {constants.META.FILTERABLE[key] && (
                                                             <Form.Control type="text"
+                                                                inputMode={constants.META.DATATYPE[key] === constants.NUMBER ? "numeric" : "text"}
                                                                 placeholder={constants.META.DISPLAY_NAME[key]}
+                                                                defaultValue={constants.META.DATATYPE[key] === constants.NUMBER && isNaN(filters[key]) ? "" : filters[key]}
                                                                 onChange={(e) =>
                                                                     setFilterValue({
                                                                         column: key,
@@ -324,7 +326,7 @@ const Shopping = () => {
                                                             />
                                                         )}
                                                         {constants.META.SORTABLE[key] && (
-                                                            <Button onClick={() => {handleOrderClick(key)}}>
+                                                            <Button onClick={() => { handleOrderClick(key) }}>
                                                                 {order.key === key ? order.order === constants.ASC ? '▲' : '▼' : 'Sort'}
                                                             </Button>
                                                         )}
