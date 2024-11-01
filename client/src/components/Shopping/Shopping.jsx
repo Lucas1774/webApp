@@ -205,7 +205,7 @@ const Shopping = () => {
         return data.filter((row) => {
             return (!isShowOnlyPositive || (isShowOnlyPositive && row[constants.QUANTITY_KEY] !== 0)) && Object.keys(filters).every((key) => {
                 if (constants.META.DATATYPE[key] === constants.NUMBER) {
-                    return isNaN(filters[key]) || row[key] >= filters[key];
+                    return isNaN(filters[key]) || row[key] === filters[key];
                 } else if (constants.META.DATATYPE[key] === constants.STRING) {
                     return row[key].toString().toLowerCase().includes(filters[key].toLowerCase());
                 } else {
