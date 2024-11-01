@@ -7,7 +7,7 @@ client/node_modules
 server/src/main/resources/application.yml
 server/src/main/resources/application-dev.yml
 server/src/main/resources/application-prod.yml
-server/src/main/resources/certificates/mykeystore.jks
+server/src/main/resources/certificates/keystore.jks
 client/.env
 
 # production
