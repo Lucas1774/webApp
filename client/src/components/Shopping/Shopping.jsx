@@ -327,7 +327,8 @@ const Shopping = () => {
                                                         )}
                                                         {constants.META.SORTABLE[key] && (
                                                             <Button onClick={() => { handleOrderClick(key) }}>
-                                                                {order.key === key ? order.order === constants.ASC ? '▲' : '▼' : 'Sort'}
+                                                                {(constants.CATEGORY_KEY === key && constants.CATEGORY_ID_KEY === order.key) || order.key === key
+                                                                    ? order.order === constants.ASC ? '▲' : '▼' : 'Sort'}
                                                             </Button>
                                                         )}
                                                     </th>
