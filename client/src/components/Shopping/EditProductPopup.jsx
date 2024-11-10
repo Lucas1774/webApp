@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import * as constants from "../../constants";
 
-const Popup = (props) => {
+const EditProductPopup = (props) => {
 
     const [isSelectVisible, setIsSelectVisible] = useState(true);
 
@@ -78,11 +78,11 @@ const Popup = (props) => {
     );
 };
 
-Popup.propTypes = {
+EditProductPopup.propTypes = {
     content: PropTypes.object,
     onSubmit: PropTypes.func,
     onPopupClose: PropTypes.func,
     categories: PropTypes.array
 };
 
-export default Popup;
+export default EditProductPopup;
