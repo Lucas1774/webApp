@@ -120,7 +120,8 @@ The next are notes to myself in case I forget my own workflows.
 ### Deploy back-end
 - In `master` branch, run `server/build.sh`. It will use `prod` configuration
 - Upload `server.jar` with FTP
-- Might be necessary to restart the web server at Azure
+- If using Azure web server, restart it.
+- If using naked app in VM, connect via ssh with -i argument to ssh credentials, kill server with `ps aux | grep java` and reboot it in the background with `nohup java -jar server.jar > output.log 2>&1 &`
 
 ### Deploy database schema
 - Connect to the database somewhere (VSCode client, SSMS, MySQL workbench, Azure client)
