@@ -27,7 +27,8 @@ const Calculator = () => {
     setInput("");
   };
 
-  const handleSubmit = (isSubmit) => {
+  const handleSubmit = (e, isSubmit) => {
+    e.preventDefault();
     let tempInput = input;
     setInput("");
     setIsLoading(true);
@@ -49,7 +50,7 @@ const Calculator = () => {
   return (
     <><h1 id="calculator">Calculator</h1>
       <div className="app calculator">
-        <Form onSubmit={() => handleSubmit(true)}>
+        <Form onSubmit={(e) => handleSubmit(e, true)}>
           <Form.Control value={input} onChange={handleKeyDown} />
           {isLoading && <Spinner color="#000" position="absolute" />}
         </Form>
@@ -85,8 +86,8 @@ const Calculator = () => {
           <Button onClick={handleClick} value="0">0</Button>
           <Button onClick={handleClick} value=".">.</Button>
           <Button onClick={handleClick} value="*10^">EXP</Button>
-          <Button onClick={() => handleSubmit(false)}>Ans</Button>
-          <Button type="submit" variant="success" onClick={() => handleSubmit(true)}>=</Button>
+          <Button onClick={(e) => handleSubmit(e, false)}>Ans</Button>
+          <Button type="submit" variant="success" onClick={(e) => {handleSubmit(e, true)}}>=</Button>
         </Row>
       </div></>
   );
