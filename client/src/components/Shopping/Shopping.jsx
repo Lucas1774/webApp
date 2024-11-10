@@ -9,19 +9,20 @@ import useDebounce from "../../hooks/useDebounce";
 import { handleError } from "../errorHandler";
 import LoginForm from "../LoginForm";
 import Spinner from "../Spinner";
-import Popup from "./Popup";
+import EditCategoriesPopup from "./EditCategoriesPopup";
+import EditProductPopup from "./EditProductPopup";
 import "./Shopping.css";
 
 const Shopping = () => {
     const [tableData, setTableData] = useState(null);
     const [categories, setCategories] = useState([]);
+    const [popup, setPopup] = useState(null);
     const [quantityInputValue, setQuantityInputValue] = useState({});
     const [filterValue, setFilterValue] = useState({});
     const [message, setMessage] = useState(null);
     const [selectedProductData, setSelectedProductData] = useState({})
     const [isLoading, setIsLoading] = useState(true);
     const [isLoginFormVisible, setIsLoginFormVisible] = useState(false);
-    const [isAddProductVisible, setIsAddProductVisible] = useState(false);
     const [isPopupVisible, setIsPopupVisible] = useState(false);
     const [filters, setFilters] = useState({});
     const [order, setOrder] = useState({ key: null, order: constants.DESC })
@@ -69,7 +70,6 @@ const Shopping = () => {
             handleError("Error fetching data", error);
         } finally {
             setIsLoading(false);
-            setIsAddProductVisible(true);
         }
     };
 
@@ -92,7 +92,7 @@ const Shopping = () => {
                 setIsLoading(false);
             }
         }
-    }
+    };
 
     const updateProductQuantity = useCallback(async (value, id, name) => {
         if (isNaN(value) || parseInt(value) < 0) {
@@ -100,7 +100,6 @@ const Shopping = () => {
         }
         makeGenericRequest(() => post('/update-product-quantity', { id, name, quantity: parseInt(value) }), () => {
             setIsLoading(true);
-            setIsAddProductVisible(false);
             getData();
         });
     }, []);
@@ -111,7 +110,7 @@ const Shopping = () => {
             setIsPopupVisible(false);
             getData();
         });
-    }
+    };
 
     useEffect(() => {
         if (debouncedValue?.value != null && debouncedValue?.rowId != null && debouncedValue?.rowName != null) {
@@ -143,10 +142,9 @@ const Shopping = () => {
     const handleResetAll = async () => {
         makeGenericRequest(() => post('/update-all-product-quantity', null), () => {
             setIsLoading(true);
-            setIsAddProductVisible(false);
             getData();
         });
-    }
+    };
 
     const handleAddProductSubmit = async (event) => {
         event.preventDefault();
@@ -156,40 +154,45 @@ const Shopping = () => {
         }
         makeGenericRequest(() => post('/new-product', name), () => {
             setIsLoading(true);
-            setIsAddProductVisible(false);
             getData();
         });
     };
 
-    const handleEditProduct = (id, name, category) => {
-        const getPossibleCategories = async () => {
-            setIsLoading(true);
-            try {
-                const response = await get("/get-possible-categories");
-                setCategories(response.data);
-            } catch (error) {
-                handleError("Error fetching data", error);
-            } finally {
-                setIsLoading(false);
-            }
+    const getPossibleCategories = async () => {
+        setIsLoading(true);
+        try {
+            const response = await get("/get-possible-categories");
+            setCategories(response.data);
+        } catch (error) {
+            handleError("Error fetching data", error);
+        } finally {
+            setIsLoading(false);
         }
+    };
 
+    const handleEditProduct = (id, name, category) => {
         getPossibleCategories();
         setSelectedProductData({
             [constants.ID_KEY]: id,
             [constants.NAME_KEY]: name,
             [constants.CATEGORY_KEY]: category
         });
+        setPopup("editProduct");
         setIsPopupVisible(true);
-    }
+    };
+
+    const handleEditCategories = () => {
+        getPossibleCategories();
+        setPopup("editCategories");
+        setIsPopupVisible(true);
+    };
 
     const handleRemoveProduct = async (id, name) => {
         makeGenericRequest(() => post('/remove-product', { id, name }), () => {
             setIsLoading(true);
-            setIsAddProductVisible(false);
             getData();
         });
-    }
+    };
 
     const handleOrderClick = (key) => {
         const actualKey = key === constants.CATEGORY_KEY ? constants.CATEGORY_ID_KEY : key;
@@ -199,7 +202,7 @@ const Shopping = () => {
                 ? (prevOrder.order === constants.DESC ? constants.ASC : constants.DESC)
                 : constants.ASC
         }));
-    }
+    };
 
     const applyFilters = (data, filters) => {
         return data.filter((row) => {
@@ -278,7 +281,7 @@ const Shopping = () => {
                 </td>
             );
         }
-    }
+    };
 
     return (
         <><h1 id="shopping">Shopping</h1>
@@ -287,18 +290,37 @@ const Shopping = () => {
                     handleLoginSubmit(e)
                 }} /> :
                     isLoading ? <Spinner /> :
-                        isPopupVisible
-                            ? <Popup content={selectedProductData}
+                        isPopupVisible ? "editProduct" === popup
+                            ? <EditProductPopup content={selectedProductData}
                                 onSubmit={(id, name, categoryId, category) => {
                                     setIsPopupVisible(false);
                                     updateProduct(id, name, categoryId, category)
-                                }} onPopupClose={() => {
+                                }}
+                                onPopupClose={() => {
                                     setSelectedProductData({});
                                     setIsPopupVisible(false);
                                 }}
                                 categories={categories} />
-                            : <>
-                                {isAddProductVisible && <Form onSubmit={(e) => handleAddProductSubmit(e)}>
+                            : <EditCategoriesPopup onOrderSave={() => {
+                                makeGenericRequest( /* TODO: Add order column in database and call ORDER BY. Use it instead of ID */() => post('/update-categories', categories), () => {
+                                    setIsLoading(true);
+                                    setIsPopupVisible(false);
+                                    getData();
+                                });
+                            }}
+                                onItemMove={(fromIndex, toIndex) => {
+                                    if (fromIndex === toIndex) {
+                                        return;
+                                    }
+                                    const updatedItems = [...categories];
+                                    const [movedItem] = updatedItems.splice(fromIndex, 1);
+                                    updatedItems.splice(toIndex, 0, movedItem);
+                                    setCategories(updatedItems);
+                                }}
+                                onPopupClose={() => setIsPopupVisible(false)}
+                                categories={categories} />
+                            : <>{tableData && <>
+                                <Form onSubmit={(e) => handleAddProductSubmit(e)}>
                                     <Form.Control type="text" />
                                     <Button className="thirty-percent" type="submit" variant="success">Add</Button>
                                     <Button className="thirty-percent" onClick={() => setIsShowOnlyPositive((prev) => !prev)}>{
@@ -306,50 +328,48 @@ const Shopping = () => {
                                     }</Button>
                                     <Button className="thirty-percent restart" onClick={() => handleResetAll()}>Reset all</Button>
                                 </Form>
-                                } {tableData &&
-                                    <Table striped bordered hover responsive>
-                                        <thead>
-                                            <tr>
-                                                {constants.META.KEYS.filter((key) => constants.META.VISIBLE[key]).map((key) => (
-                                                    <th key={key}>
-                                                        {constants.META.FILTERABLE[key] && (
-                                                            <Form.Control type="text"
-                                                                inputMode={constants.META.DATATYPE[key] === constants.NUMBER ? "numeric" : "text"}
-                                                                placeholder={constants.META.DISPLAY_NAME[key]}
-                                                                defaultValue={constants.META.DATATYPE[key] === constants.NUMBER && isNaN(filters[key]) ? "" : filters[key]}
-                                                                onChange={(e) =>
-                                                                    setFilterValue({
-                                                                        column: key,
-                                                                        value: constants.META.DATATYPE[key] === constants.NUMBER ? parseInt(e.target.value) : e.target.value
-                                                                    })}
-                                                                onClick={(e) => e.target.select()}
-                                                            />
-                                                        )}
-                                                        {constants.META.SORTABLE[key] && (
-                                                            <Button onClick={() => { handleOrderClick(key) }}>
-                                                                {(constants.CATEGORY_KEY === key && constants.CATEGORY_ID_KEY === order.key) || order.key === key
-                                                                    ? order.order === constants.ASC ? '▲' : '▼' : 'Sort'}
-                                                            </Button>
-                                                        )}
-                                                    </th>
-                                                ))}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {applyOrder(applyFilters(tableData, filters), order).map((row) => {
-                                                const id = row[constants.ID_KEY];
-                                                return (
-                                                    <tr key={id}>
-                                                        {constants.META.KEYS
-                                                            .filter((key) => constants.META.VISIBLE[key])
-                                                            .map((key) => renderColumn(key, id,
-                                                                row[constants.NAME_KEY], row[constants.CATEGORY_ID_KEY], row[constants.CATEGORY_KEY], row[constants.QUANTITY_KEY]))}
-                                                    </tr>
-                                                )
-                                            })}
-                                        </tbody>
-                                    </Table>
-                                }</>
+                                <Table striped bordered hover responsive>
+                                    <thead>
+                                        <tr>
+                                            {constants.META.KEYS.filter((key) => constants.META.VISIBLE[key]).map((key) => (
+                                                <th key={key}>
+                                                    {constants.META.FILTERABLE[key] && (
+                                                        <Form.Control type="text"
+                                                            inputMode={constants.META.DATATYPE[key] === constants.NUMBER ? "numeric" : "text"}
+                                                            placeholder={constants.META.DISPLAY_NAME[key]}
+                                                            defaultValue={constants.META.DATATYPE[key] === constants.NUMBER && isNaN(filters[key]) ? "" : filters[key]}
+                                                            onChange={(e) => setFilterValue({
+                                                                column: key,
+                                                                value: constants.META.DATATYPE[key] === constants.NUMBER ? parseInt(e.target.value) : e.target.value
+                                                            })}
+                                                            onClick={(e) => e.target.select()} />
+                                                    )}
+                                                    {constants.META.SORTABLE[key] && (
+                                                        <Button onClick={() => { handleOrderClick(key); }}>
+                                                            {(constants.CATEGORY_KEY === key && constants.CATEGORY_ID_KEY === order.key) || order.key === key
+                                                                ? order.order === constants.ASC ? '▲' : '▼' : 'Sort'}
+                                                        </Button>
+                                                    )}
+                                                </th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {applyOrder(applyFilters(tableData, filters), order).map((row) => {
+                                            const id = row[constants.ID_KEY];
+                                            return (
+                                                <tr key={id}>
+                                                    {constants.META.KEYS
+                                                        .filter((key) => constants.META.VISIBLE[key])
+                                                        .map((key) => renderColumn(key, id,
+                                                            row[constants.NAME_KEY], row[constants.CATEGORY_ID_KEY], row[constants.CATEGORY_KEY], row[constants.QUANTITY_KEY]))}
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </Table>
+                                <Button onClick={handleEditCategories}>Sort categories</Button>
+                            </>}</>
             }</div></>
     );
 };
