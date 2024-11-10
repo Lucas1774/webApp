@@ -14,4 +14,6 @@ public class Category {
     private int id;
     @JsonProperty("NAME")
     private String name;
+    @JsonProperty("ORDER")
+    private int order;
 }

@@ -4,6 +4,7 @@ USE `my_first_database` ;
 CREATE TABLE `my_first_database`.`categories` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(50) NOT NULL,
+  `category_order` int NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name_UNIQUE` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

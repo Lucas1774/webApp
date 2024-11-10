@@ -18,6 +18,8 @@ public class ShoppingItem {
     private Integer categoryId;
     @JsonProperty("CATEGORY")
     private String category;
+    @JsonProperty("ORDER")
+    private Integer categoryOrder;
     @JsonProperty("QUANTITY")
-    private int quantity;
+    private Integer quantity;
 }

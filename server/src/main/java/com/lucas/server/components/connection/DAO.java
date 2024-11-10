@@ -69,7 +69,7 @@ public class DAO {
     }
 
     public List<ShoppingItem> getShoppingItems(String username) throws DataAccessException {
-        String sql = "SELECT a.id, a.name, c.id AS category_id, c.name AS category_name, s.quantity "
+        String sql = "SELECT a.id, a.name, c.id AS category_id, c.name AS category_name, c.category_order, s.quantity "
                 + "FROM products a "
                 + "LEFT JOIN categories c ON c.id = a.category_id "
                 + "INNER JOIN shopping s ON s.product_id = a.id "
@@ -83,16 +83,18 @@ public class DAO {
                         resultSet.getString("name"),
                         resultSet.getObject("category_id", Integer.class),
                         Optional.ofNullable(resultSet.getString("category_name")).orElse(""),
+                        resultSet.getInt("category_order"),
                         resultSet.getInt("quantity")));
     }
 
     public List<Category> getPossibleCategories() throws DataAccessException {
-        String sql = "SELECT * FROM categories";
+        String sql = "SELECT * FROM categories ORDER BY category_order ASC";
         return this.jdbcTemplate.query(
                 sql,
                 (resultSet, rowNum) -> new Category(
                         resultSet.getInt("id"),
-                        Optional.ofNullable(resultSet.getString("name")).orElse("")));
+                        Optional.ofNullable(resultSet.getString("name")).orElse(""),
+                        resultSet.getInt("category_order")));
     }
 
     @Transactional
@@ -117,10 +119,14 @@ public class DAO {
             throws DataAccessException {
         Integer categoryIdInt;
         if (!categoryId.isPresent()) {
-            String insertCategorySql = "INSERT INTO categories (name) VALUES (:category)";
-            String getCategoryIdSql = "SELECT id FROM categories WHERE name = :category";
+            String maxOrderSql = "SELECT MAX(category_order) FROM categories";
             MapSqlParameterSource parameters = new MapSqlParameterSource();
+            Integer maxOrder = jdbcTemplate.queryForObject(maxOrderSql, parameters, Integer.class);
+            int newOrder = maxOrder != null ? maxOrder + 1 : 1;
+            String insertCategorySql = "INSERT INTO categories (name, category_order) VALUES (:category, :order)";
+            String getCategoryIdSql = "SELECT id FROM categories WHERE name = :category";
             parameters.addValue("category", categoryName);
+            parameters.addValue("order", newOrder);
             this.jdbcTemplate.update(insertCategorySql, parameters);
             categoryIdInt = this.jdbcTemplate.queryForObject(getCategoryIdSql, parameters, Integer.class);
         } else {
@@ -149,8 +155,7 @@ public class DAO {
     public void updateAllProductQuantity(String username) throws DataAccessException {
         String sql = "UPDATE shopping SET quantity = 0 "
                 + "WHERE user_id = (SELECT id FROM users WHERE username = :username)";
-        MapSqlParameterSource parameters = new MapSqlParameterSource();
-        parameters.addValue("username", username);
+        MapSqlParameterSource parameters = new MapSqlParameterSource("username", username);
         this.jdbcTemplate.update(sql, parameters);
     }
 
@@ -168,5 +173,19 @@ public class DAO {
         parameters.addValue("username", username);
         this.jdbcTemplate.update(removeFromShoppingSql, parameters);
         this.jdbcTemplate.update(removeFromProductsSql, parameters);
+    }
+
+    @Transactional
+    public void updateCategoryOrders(List<Category> categories) {
+        String sql = "UPDATE categories SET category_order = :order WHERE id = :id";
+        MapSqlParameterSource[] params = categories.stream()
+                .map(category -> {
+                    MapSqlParameterSource parameters = new MapSqlParameterSource();
+                    parameters.addValue("id", category.getId());
+                    parameters.addValue("order", category.getOrder());
+                    return parameters;
+                })
+                .toArray(MapSqlParameterSource[]::new);
+        this.jdbcTemplate.batchUpdate(sql, params);
     }
 }

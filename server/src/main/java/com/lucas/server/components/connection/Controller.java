@@ -1,7 +1,6 @@
 package com.lucas.server.components.connection;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.Callable;
@@ -103,21 +102,21 @@ public class Controller {
     }
 
     @PostMapping("/new-product")
-    public ResponseEntity<String> postProduct(HttpServletRequest request, @RequestBody String item) {
+    public ResponseEntity<String> postProduct(HttpServletRequest request, @RequestBody String itemName) {
         return this.handleRequest(() -> {
-            dao.insertProduct(item.replace("\"", ""), this.retrieveUsername(request.getCookies()));
+            dao.insertProduct(itemName.replace("\"", ""), this.retrieveUsername(request.getCookies()));
             return "Product added";
         });
     }
 
     @PostMapping("/update-product")
-    public ResponseEntity<String> updateProduct(HttpServletRequest request, @RequestBody Map<String, Object> data) {
+    public ResponseEntity<String> updateProduct(HttpServletRequest request, @RequestBody ShoppingItem data) {
         return this.handleRequest(() -> {
             if (ADMIN.equals(this.retrieveUsername(request.getCookies()))) {
-                dao.updateProduct((int) (data.get("id")),
-                        (String) data.get("name"),
-                        Optional.ofNullable(data.get("categoryId")),
-                        (String) data.get("category"));
+                dao.updateProduct((data.getId()),
+                        data.getName(),
+                        Optional.ofNullable(data.getCategoryId()),
+                        data.getCategory());
                 return "Product updated";
             } else {
                 return "Unauthorized";
@@ -127,11 +126,11 @@ public class Controller {
 
     @PostMapping("/update-product-quantity")
     public ResponseEntity<String> updateProductQuantity(HttpServletRequest request,
-            @RequestBody Map<String, Object> data) {
+            @RequestBody ShoppingItem data) {
         return this.handleRequest(() -> {
-            dao.updateProductQuantity((int) data.get("id"), (int) data.get("quantity"),
+            dao.updateProductQuantity(data.getId(), data.getQuantity(),
                     this.retrieveUsername(request.getCookies()));
-            return "Product " + data.get("name") + " updated";
+            return "Product " + data.getName() + " updated";
         });
     }
 
@@ -144,10 +143,22 @@ public class Controller {
     }
 
     @PostMapping("/remove-product")
-    public ResponseEntity<String> removeProduct(HttpServletRequest request, @RequestBody Map<String, Object> data) {
+    public ResponseEntity<String> removeProduct(HttpServletRequest request, @RequestBody ShoppingItem data) {
         return this.handleRequest(() -> {
-            dao.removeProduct((int) data.get("id"), this.retrieveUsername(request.getCookies()));
-            return "Product " + data.get("name") + " removed";
+            dao.removeProduct(data.getId(), this.retrieveUsername(request.getCookies()));
+            return "Product " + data.getName() + " removed";
+        });
+    }
+
+    @PostMapping("update-categories")
+    public ResponseEntity<String> updateCategories(HttpServletRequest request, @RequestBody List<Category> categories) {
+        return this.handleRequest(() -> {
+            if (ADMIN.equals(this.retrieveUsername(request.getCookies()))) {
+                dao.updateCategoryOrders(categories);
+                return "Categories updated";
+            } else {
+                return "Unauthorized";
+            }
         });
     }
 

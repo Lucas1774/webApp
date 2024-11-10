@@ -98,14 +98,14 @@ const Shopping = () => {
         if (isNaN(value) || parseInt(value) < 0) {
             return;
         }
-        makeGenericRequest(() => post('/update-product-quantity', { id, name, quantity: parseInt(value) }), () => {
+        makeGenericRequest(() => post('/update-product-quantity', { [constants.ID_KEY]: id, [constants.NAME_KEY]: name, [constants.QUANTITY_KEY]: parseInt(value) }), () => {
             setIsLoading(true);
             getData();
         });
     }, []);
 
     const updateProduct = async (id, name, categoryId, category) => {
-        makeGenericRequest(() => post('/update-product', { id, name, categoryId, category }), () => {
+        makeGenericRequest(() => post('/update-product', { [constants.ID_KEY]: id, [constants.NAME_KEY]: name, [constants.CATEGORY_ID_KEY]: categoryId, [constants.CATEGORY_KEY]: category }), () => {
             setIsLoading(true);
             setIsPopupVisible(false);
             getData();
@@ -188,14 +188,25 @@ const Shopping = () => {
     };
 
     const handleRemoveProduct = async (id, name) => {
-        makeGenericRequest(() => post('/remove-product', { id, name }), () => {
+        makeGenericRequest(() => post('/remove-product', { [constants.ID_KEY]: id, [constants.NAME_KEY]: name }), () => {
             setIsLoading(true);
             getData();
         });
     };
 
+    const handleOrderSave = async () => {
+        categories.forEach((category, index) => {
+            category[constants.CATEGORY_ORDER_KEY] = index + 1;
+        });
+        makeGenericRequest(() => post('/update-categories', categories), () => {
+            setIsLoading(true);
+            setIsPopupVisible(false);
+            getData();
+        });
+    };
+
     const handleOrderClick = (key) => {
-        const actualKey = key === constants.CATEGORY_KEY ? constants.CATEGORY_ID_KEY : key;
+        const actualKey = key === constants.CATEGORY_KEY ? constants.CATEGORY_ORDER_KEY : key;
         setOrder((prevOrder) => ({
             key: actualKey,
             order: prevOrder.key === actualKey
@@ -301,13 +312,7 @@ const Shopping = () => {
                                     setIsPopupVisible(false);
                                 }}
                                 categories={categories} />
-                            : <EditCategoriesPopup onOrderSave={() => {
-                                makeGenericRequest( /* TODO: Add order column in database and call ORDER BY. Use it instead of ID */() => post('/update-categories', categories), () => {
-                                    setIsLoading(true);
-                                    setIsPopupVisible(false);
-                                    getData();
-                                });
-                            }}
+                            : <EditCategoriesPopup onOrderSave={handleOrderSave}
                                 onItemMove={(fromIndex, toIndex) => {
                                     if (fromIndex === toIndex) {
                                         return;
@@ -346,7 +351,7 @@ const Shopping = () => {
                                                     )}
                                                     {constants.META.SORTABLE[key] && (
                                                         <Button onClick={() => { handleOrderClick(key); }}>
-                                                            {(constants.CATEGORY_KEY === key && constants.CATEGORY_ID_KEY === order.key) || order.key === key
+                                                            {(constants.CATEGORY_KEY === key && constants.CATEGORY_ORDER_KEY === order.key) || order.key === key
                                                                 ? order.order === constants.ASC ? '▲' : '▼' : 'Sort'}
                                                         </Button>
                                                     )}
