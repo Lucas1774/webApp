@@ -41,7 +41,7 @@ const SortableList = ({ items, onOrderSave, onItemMove }) => {
         setRenderKey((prev) => prev + 1);
     }, []);
 
-    return (
+    return (items.length === 0 ? <div>No categories</div> :
         <>
             <DndProvider backend={HTML5Backend}>
                 {items.map((item, index) => (
