@@ -10,10 +10,15 @@ spring:
       name: <username>
       password: <password>
   datasource:
-    url: jdbc:<server>://<address>:<port>/<database>;<options>
+    url: jdbc:<server-type>://<address>:<port>/<database><options>
     username: <username>
     password: <password>
     driver-class-name: <package>.<class>
 
 server:
-  port: 8443
+  port: 443
+  ssl:
+    enabled: true
+    key-store: <classpath:path/to/keystore.jks>
+    key-store-password: <password>
+    key-store-type: JKS
