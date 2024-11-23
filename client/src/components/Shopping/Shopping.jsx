@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import { Button, Form, Table } from "react-bootstrap";
 import { get, post } from "../../api";
 import deleteIcon from "../../assets/images/bin.png";
@@ -28,6 +28,7 @@ const Shopping = () => {
     const [order, setOrder] = useState({ key: null, order: constants.DESC })
     const [isShowOnlyPositive, setIsShowOnlyPositive] = useState(false);
 
+    const inputsRef = useRef({});
     const debouncedValue = useDebounce(quantityInputValue, 1000);
     const filterDebouncedValue = useDebounce(filterValue, 1000)
 
@@ -327,11 +328,17 @@ const Shopping = () => {
                             : <>{tableData && <>
                                 <Form onSubmit={(e) => handleAddProductSubmit(e)}>
                                     <Form.Control type="text" />
-                                    <Button className="thirty-percent" type="submit" variant="success">Add</Button>
-                                    <Button className="thirty-percent" onClick={() => setIsShowOnlyPositive((prev) => !prev)}>{
+                                    <Button className="fifty-percent" type="submit" variant="success">Add</Button>
+                                    <Button className="fifty-percent" onClick={() => setIsShowOnlyPositive((prev) => !prev)}>{
                                         isShowOnlyPositive ? "Show all" : "Hide zero"
                                     }</Button>
-                                    <Button className="thirty-percent restart" onClick={() => handleResetAll()}>Reset all</Button>
+                                    <Button className="fifty-percent" onClick={() => {
+                                        Object.values(inputsRef.current).forEach((input) => {
+                                            if (input) input.value = "";
+                                        });
+                                        setFilters({});
+                                    }}>Clear filters</Button>
+                                    <Button className="fifty-percent restart" onClick={() => handleResetAll()}>Reset all</Button>
                                 </Form>
                                 <Table striped bordered hover responsive>
                                     <thead>
@@ -339,7 +346,8 @@ const Shopping = () => {
                                             {constants.META.KEYS.filter((key) => constants.META.VISIBLE[key]).map((key) => (
                                                 <th key={key}>
                                                     {constants.META.FILTERABLE[key] && (
-                                                        <Form.Control type="text"
+                                                        <Form.Control ref={(e) => inputsRef.current[key] = e}
+                                                            type="text"
                                                             inputMode={constants.META.DATATYPE[key] === constants.NUMBER ? "numeric" : "text"}
                                                             placeholder={constants.META.DISPLAY_NAME[key]}
                                                             defaultValue={constants.META.DATATYPE[key] === constants.NUMBER && isNaN(filters[key]) ? "" : filters[key]}
