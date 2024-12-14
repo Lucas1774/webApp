@@ -1,3 +1,4 @@
+import { generateRandomBetweenZeroAndX } from "../../../constants";
 import {
     SCRAMBLE_LENGTH as SKEWB_SCRAMBLE_LENGTH,
     Scramble as skewbScramble
@@ -14,7 +15,7 @@ const TIP_SCRAMBLE_MOVES = [
 export const Scramble = () => {
     let scramble = skewbScramble();
     for (const element of TIP_SCRAMBLE_MOVES) {
-        scramble += element[Math.floor(Math.random() * 3)];
+        scramble += element[generateRandomBetweenZeroAndX(3)];
     }
     return scramble;
 };

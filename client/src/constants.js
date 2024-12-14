@@ -77,3 +77,7 @@ export const META = {
         [REMOVE_KEY]: false
     }
 }
+
+export const generateRandomBetweenZeroAndX = (x) => {
+    return Math.floor(Math.random() * x);
+};
