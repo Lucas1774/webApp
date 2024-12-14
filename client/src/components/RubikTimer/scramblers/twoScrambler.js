@@ -1,27 +1,23 @@
+import { generateRandomBetweenZeroAndX } from "../../../constants";
+import { adaptToAvailabilityMatrix, instantiateMove, invalidateMoves, SCRAMBLE_MOVES } from "./Scramble";
+
 export const SCRAMBLE_LENGTH = 11;
-const SCRAMBLE_MOVES = [
-    ["U ", "U2 ", "U' "],
-    ["F ", "F2 ", "F' "],
-    ["R ", "R2 ", "R' "],
-];
 
 export const Scramble = () => {
+    let availabilityMatrix = [[true], [true], [true]];
+    const axisCount = availabilityMatrix.length;
+    const layerCount = availabilityMatrix[0].length;
+    let turnIterator;
     let scramble = "";
-    let lastMoveIndex = -1;
-    let turnLayer, turnIterator;
+    let move = { axis: null, layer: null };
+    let previous;
     for (let i = 0; i < SCRAMBLE_LENGTH; i++) {
-        if (0 === i) {
-            turnLayer = Math.floor(Math.random() * 3);
-        }
-        else {
-            turnLayer = Math.floor(Math.random() * 2);
-            if (turnLayer === lastMoveIndex) {
-                turnLayer++;
-            }
-        }
-        turnIterator = Math.floor(Math.random() * 3);
-        scramble += SCRAMBLE_MOVES[turnLayer][turnIterator];
-        lastMoveIndex = turnLayer;
+        move = instantiateMove(axisCount, layerCount);
+        adaptToAvailabilityMatrix(availabilityMatrix, move, axisCount);
+        invalidateMoves(availabilityMatrix, move, previous);
+        turnIterator = generateRandomBetweenZeroAndX(3);
+        scramble += SCRAMBLE_MOVES[move.axis][move.layer][turnIterator];
+        previous = { ...move };
     }
     return scramble;
 };

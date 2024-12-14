@@ -215,7 +215,8 @@ test("6x6", () => {
 });
 
 const checkBldScramble = (scramble, numberOfWideMoves) => {
-	const axisMoves = scramble.replace(/[2'\sw]/g, "");
+	const spinCountLessNormalizedMoves = scramble.replace(/[2'\s]/g, "");
+	const axisMoves = spinCountLessNormalizedMoves.replace(/w/g, "");
 	const nonWideAxisMoves = axisMoves.slice(0, -(numberOfWideMoves));
 	const wideMoves = numberOfWideMoves === 0
 		? ""
@@ -230,6 +231,12 @@ const checkBldScramble = (scramble, numberOfWideMoves) => {
 	expect(numberOfWideMoves).not.toBeGreaterThan(2);
 	expect(axisMoves.length).toBe((THREE_SCRAMBLE_LENGTH) + numberOfWideMoves);
 	checkThreeScramble(nonWideAxisMoves);
+	expect(spinCountLessNormalizedMoves).not.toContain("UDDw");
+	expect(spinCountLessNormalizedMoves).not.toContain("DUUw");
+	expect(spinCountLessNormalizedMoves).not.toContain("FBBw");
+	expect(spinCountLessNormalizedMoves).not.toContain("BBFw");
+	expect(spinCountLessNormalizedMoves).not.toContain("RLLw");
+	expect(spinCountLessNormalizedMoves).not.toContain("LRRw");
 	expect(wideMoves).not.toBe("UU");
 	expect(wideMoves).not.toBe("UD");
 	expect(wideMoves).not.toBe("DU");

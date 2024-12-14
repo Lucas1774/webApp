@@ -1,50 +1,42 @@
+import { generateRandomBetweenZeroAndX } from "../../../constants";
+import { adaptToAvailabilityMatrix, instantiateMove } from "./Scramble";
 import {
-    SCRAMBLE_LENGTH as THREE_SCRAMBLE_LENGTH,
     Scramble as threeScramble
 } from "./threeScrambler";
 
-const LAST_TWO = [
-    ["Dw ", "Dw2 ", "Dw' "],
+const LAST_TWO = [[
     ["Uw ", "Uw2 ", "Uw' "],
-    ["Bw ", "Bw2 ", "Bw' "],
+], [
     ["Fw ", "Fw2 ", "Fw' "],
-    ["Lw ", "Lw2 ", "Lw' "],
+], [
     ["Rw ", "Rw2 ", "Rw' "],
-];
+]];
 
 export const Scramble = () => {
-    let scramble = threeScramble();
-    let lastMoveIndex = { 'U': 0, 'D': 1, 'F': 2, 'B': 3, 'R': 4, 'L': 5 }[scramble.trim().split(" ")[THREE_SCRAMBLE_LENGTH - 1].charAt(0)];
-    let turnLayer, turnIterator;
-    let firstWideMove = false;
-    if (0 !== Math.floor(Math.random() * 6)) {
-        turnLayer = Math.floor(Math.random() * 5);
-        if (turnLayer === lastMoveIndex) {
-            turnLayer++;
+    let availabilityMatrix = [[true, true], [true, true], [true, true]];
+    const axisCount = availabilityMatrix.length;
+    const layerCount = availabilityMatrix[0].length;
+    let turnIterator;
+    let scramble = threeScramble(availabilityMatrix);
+    availabilityMatrix.forEach(tuple => {
+        tuple.pop();
+    });
+    let move = { axis: null, layer: null };
+    if (0 !== generateRandomBetweenZeroAndX(6)) {
+        move = instantiateMove(axisCount, layerCount);
+        adaptToAvailabilityMatrix(availabilityMatrix, move, axisCount);
+        const moveAxis = move.axis;
+        for (let i = 0; i < availabilityMatrix[moveAxis].length; i++) {
+            availabilityMatrix[moveAxis][i] = false;
         }
-        turnIterator = Math.floor(Math.random() * 3);
-        scramble += LAST_TWO[turnLayer][turnIterator];
-        lastMoveIndex = turnLayer;
-        firstWideMove = true;
+        turnIterator = generateRandomBetweenZeroAndX(3);
+        scramble += LAST_TWO[moveAxis][move.layer][turnIterator];
     }
-    if (0 !== Math.floor(Math.random() * 4)) {
-        if (firstWideMove) {
-            turnLayer = Math.floor(Math.random() * 4);
-            if (parseInt(lastMoveIndex / 2) === parseInt(turnLayer / 2)) {
-                if (turnLayer % 2 === 0) {
-                    turnLayer += 2;
-                } else {
-                    turnLayer++;
-                }
-            }
-        } else {
-            turnLayer = Math.floor(Math.random() * 5);
-            if (turnLayer === lastMoveIndex) {
-                turnLayer++;
-            }
-        }
-        turnIterator = Math.floor(Math.random() * 3);
-        scramble += LAST_TWO[turnLayer][turnIterator];
+    if (0 !== generateRandomBetweenZeroAndX(4)) {
+        move = instantiateMove(axisCount, layerCount);
+        adaptToAvailabilityMatrix(availabilityMatrix, move, axisCount);
+        turnIterator = generateRandomBetweenZeroAndX(3);
+        scramble += LAST_TWO[move.axis][move.layer][turnIterator];
     }
     return scramble;
 };

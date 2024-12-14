@@ -1,3 +1,4 @@
+import { generateRandomBetweenZeroAndX } from "../../../constants";
 export const SCRAMBLE_LENGTH = 77;
 const SCRAMBLE_MOVES = [
     ["R++ ", "R-- "],
@@ -10,7 +11,7 @@ export const Scramble = () => {
     let turn = 0;
     let turnIterator;
     for (let i = 0; i < SCRAMBLE_LENGTH; i++) {
-        turnIterator = Math.floor(Math.random() * 2);
+        turnIterator = generateRandomBetweenZeroAndX(2);
         if (0 !== (i + 1) % 11) {
             scramble += SCRAMBLE_MOVES[turn][turnIterator];
             turn = (turn + 1) % 2;

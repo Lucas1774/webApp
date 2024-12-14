@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { TIMEOUT_DELAY } from "../../constants";
+import { generateRandomBetweenZeroAndX, TIMEOUT_DELAY } from "../../constants";
 import "./SecretSanta.css";
 
 const SecretSanta = () => {
@@ -127,7 +127,7 @@ const SecretSanta = () => {
         const unusedElements = [...originalArray];
         let newTargets = [];
         while (unusedElements.length !== 0) {
-            const randomIndex = Math.floor(Math.random() * unusedElements.length);
+            const randomIndex = generateRandomBetweenZeroAndX(unusedElements.length);
             const newTarget = unusedElements[randomIndex].toString();
             newTargets = [...newTargets, newTarget];
             unusedElements.splice(randomIndex, 1);
