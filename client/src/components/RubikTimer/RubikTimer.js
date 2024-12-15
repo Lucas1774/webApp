@@ -235,7 +235,7 @@ const RubikTimer = () => {
     // Set up event listeners
     useEffect(() => {
         if (isAndroid) {
-            document.addEventListener("touchstart", handleTouchStart);
+            document.addEventListener("touchstart", handleTouchStart, true);
             document.addEventListener("touchmove", handleTouchMove, { passive: false });
             document.addEventListener("touchend", handleTouchEnd);
             window.addEventListener("resize", handleResize);
@@ -245,7 +245,7 @@ const RubikTimer = () => {
         };
         return () => {
             if (isAndroid) {
-                document.removeEventListener("touchstart", handleTouchStart);
+                document.removeEventListener("touchstart", handleTouchStart, true);
                 document.removeEventListener("touchmove", handleTouchMove);
                 document.removeEventListener("touchend", handleTouchEnd);
                 window.removeEventListener("resize", handleResize);
