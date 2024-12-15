@@ -4,8 +4,10 @@ import * as constants from "../../../constants";
 import { generateRandomBetweenZeroAndX } from "../../../constants";
 import { Scramble as bldScrambler } from "./bldScrambler";
 import { Scramble as clockScrambler } from "./clockScrambler";
+import { Scramble as fiveBldScrambler } from "./fiveBldScrambler";
 import { Scramble as fiveScrambler } from "./fiveScrambler";
 import { Scramble as fmcScrambler } from "./fmcScrambler";
+import { Scramble as fourBldScrambler } from "./fourBldScrambler";
 import { Scramble as fourScrambler } from "./fourScrambler";
 import { Scramble as megaScrambler } from "./megaScrambler";
 import { Scramble as pyraminxScrambler } from "./pyraScrambler";
@@ -65,10 +67,10 @@ const Scramble = ({ isNewScramble, onScrambleChange, puzzle, display, quantity }
                     newScramble = "not implemented";
                     break;
                 case constants.FOUR_BLD:
-                    newScramble = "not implemented";
+                    newScramble = fourBldScrambler().trim();
                     break;
                 case constants.FIVE_BLD:
-                    newScramble = "not implemented";
+                    newScramble = fiveBldScrambler().trim();
                     break;
                 case constants.MULTI: {
                     let multiScrambles = [];
@@ -138,7 +140,6 @@ export const adaptToAvailabilityMatrix = (matrix, move, axisCount) => {
         move.axis = ++move.axis % axisCount;
     }
     console.log("ERROR: could not find a valid move");
-    return;
 };
 
 export const invalidateMoves = (matrix, move, previous) => {
@@ -151,7 +152,6 @@ export const invalidateMoves = (matrix, move, previous) => {
             }
         }
     }
-    return;
 };
 
 Scramble.propTypes = {

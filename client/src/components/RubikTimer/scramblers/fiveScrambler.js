@@ -3,8 +3,10 @@ import { adaptToAvailabilityMatrix, instantiateMove, invalidateMoves, SCRAMBLE_M
 
 export const SCRAMBLE_LENGTH = 60;
 
-export const Scramble = () => {
-    let availabilityMatrix = [[true, true, true, true], [true, true, true, true], [true, true, true, true]];
+export const Scramble = (availabilityMatrix = null) => {
+    if (!availabilityMatrix) {
+        availabilityMatrix = [[true, true, true, true], [true, true, true, true], [true, true, true, true]];
+    }
     const axisCount = availabilityMatrix.length;
     const layerCount = availabilityMatrix[0].length;
     let turnIterator;

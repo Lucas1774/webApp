@@ -367,6 +367,28 @@ test("skewb", () => {
 	}
 });
 
+test("5BLD", () => {
+	for (let i = 0; i < NUMBER_OF_RUNS; i++) {
+		render(<Scramble isNewScramble={true} onScrambleChange={() => { }} puzzle={constants.FIVE_BLD} display="block" quantity={0} ></Scramble>)
+	}
+	for (let scramble of screen.getAllByTestId("scramble").map(scramble => scramble.textContent)) {
+		const sanitizedMoves = scramble.replace(/[2']/g, "");
+		checkFourScramble(sanitizedMoves);
+		expect(sanitizedMoves).not.toContain("3Uw 3Uw");
+		expect(sanitizedMoves).not.toContain("3Dw 3Dw");
+		expect(sanitizedMoves).not.toContain("3Fw 3Fw");
+		expect(sanitizedMoves).not.toContain("3Bw 3Bw");
+		expect(sanitizedMoves).not.toContain("3Rw 3Rw");
+		expect(sanitizedMoves).not.toContain("3Lw 3Lw");
+		expect(sanitizedMoves).not.toContain("Uw 3Dw");
+		expect(sanitizedMoves).not.toContain("Dw 3Uw");
+		expect(sanitizedMoves).not.toContain("Fw 3Bw");
+		expect(sanitizedMoves).not.toContain("Bw 3Fw");
+		expect(sanitizedMoves).not.toContain("Rw 3Lw");
+		expect(sanitizedMoves).not.toContain("Lw 3Rw");
+	}
+});
+
 test("multi", () => {
 	let scramblesWIthNoWideMoves = 0;
 	let ScramblesWIthOneWideMove = 0;
