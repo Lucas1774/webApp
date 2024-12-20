@@ -360,7 +360,7 @@ const RubikTimer = () => {
         return (
             <Form id={constants.MULTI} onSubmit={handleSubmit}>
                 <Form.Label ref={formLabel}>Number of scrambles:</Form.Label>
-                <Form.Control inputMode="numeric" onChange={(event) => multiQuantity.current = event.target.value} />
+                <Form.Control inputMode="numeric" onChange={(event) => multiQuantity.current = parseInt(event.target.value)} />
                 <Button type="submit" variant="success">Generate</Button>
             </Form>
         );
