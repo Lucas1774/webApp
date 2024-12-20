@@ -1,5 +1,5 @@
 import { generateRandomBetweenZeroAndX } from "../../../constants";
-import { adaptToAvailabilityMatrix, instantiateMove, invalidateMoves, SCRAMBLE_MOVES } from "./Scramble";
+import { generateMove, SCRAMBLE_MOVES, updateAvailabilityMatrix } from "./Scramble";
 import {
     SCRAMBLE_LENGTH as THREE_SCRAMBLE_LENGTH
 } from "./threeScrambler";
@@ -10,15 +10,12 @@ export const SCRAMBLE_LENGTH = THREE_SCRAMBLE_LENGTH + ((FMC_PREFIX.trim().split
 export const Scramble = () => {
     let scramble = FMC_PREFIX;
     let availabilityMatrix = [[true, true], [true, false], [true, true]];
-    const axisCount = availabilityMatrix.length;
-    const layerCount = availabilityMatrix[0].length;
     let turnIterator;
     let move = { axis: null, layer: null };
     let previous;
     for (let i = 0; i < THREE_SCRAMBLE_LENGTH - 1; i++) {
-        move = instantiateMove(axisCount, layerCount);
-        adaptToAvailabilityMatrix(availabilityMatrix, move, axisCount);
-        invalidateMoves(availabilityMatrix, move, previous);
+        move = generateMove(availabilityMatrix);
+        updateAvailabilityMatrix(availabilityMatrix, move, previous);
         turnIterator = generateRandomBetweenZeroAndX(3);
         scramble += SCRAMBLE_MOVES[move.axis][move.layer][turnIterator];
         previous = { ...move };
@@ -27,9 +24,7 @@ export const Scramble = () => {
     if (previous.axis === 2) { // invalidate L as well
         availabilityMatrix[2][0] = false;
     }
-    move = instantiateMove(axisCount, layerCount);
-    adaptToAvailabilityMatrix(availabilityMatrix, move, axisCount);
-    invalidateMoves(availabilityMatrix, move, previous);
+    move = generateMove(availabilityMatrix);
     turnIterator = generateRandomBetweenZeroAndX(3);
     scramble += SCRAMBLE_MOVES[move.axis][move.layer][turnIterator];
     scramble += FMC_PREFIX;
