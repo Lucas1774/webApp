@@ -118,31 +118,26 @@ export const SCRAMBLE_MOVES = [[
     ["3Rw ", "3Rw2 ", "3Rw' "],
 ]];
 
-export const instantiateMove = (axis, layers, width = null) => {
-    let axisIdx = generateRandomBetweenZeroAndX(axis);
-    let layerIdx = width !== null
-        ? width * 2 + generateRandomBetweenZeroAndX(2)
-        : generateRandomBetweenZeroAndX(layers);
-    return {
-        axis: axisIdx,
-        layer: layerIdx
-    };
-};
-
-export const adaptToAvailabilityMatrix = (matrix, move, axisCount) => {
-    for (let i = 0; i < axisCount; i++) {
-        for (let j = 0; j < 2; j++) {
-            if (matrix[move.axis][move.layer]) {
-                return;
+export const generateMove = (availabilityMatrix, width = null) => {
+    const validMoves = [];
+    const [layerStart, layerEnd] = width !== null 
+    ? [width * 2, width * 2 + 2] 
+    : [0, availabilityMatrix[0].length];
+    for (let axis = 0; axis < availabilityMatrix.length; axis++) {
+        for (let layer = layerStart; layer < layerEnd; layer++) {
+            if (availabilityMatrix[axis][layer]) {
+                validMoves.push({ axis, layer });
             }
-            move.layer = move.layer % 2 === 0 ? move.layer + 1 : move.layer - 1;
         }
-        move.axis = ++move.axis % axisCount;
     }
-    console.log("ERROR: could not find a valid move");
+    if (validMoves.length === 0) {
+        console.log("ERROR: No valid moves available");
+        return null;
+    }
+    return validMoves[generateRandomBetweenZeroAndX(validMoves.length)];
 };
 
-export const invalidateMoves = (matrix, move, previous) => {
+export const updateAvailabilityMatrix = (matrix, move, previous) => {
     matrix[move.axis][move.layer] = false;
     if (previous) {
         const previousAxis = previous.axis;
