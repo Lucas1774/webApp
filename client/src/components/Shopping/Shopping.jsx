@@ -83,14 +83,18 @@ const Shopping = () => {
         } catch (error) {
             handleError("Error sending data", error);
         } finally {
-            if (message) {
-                setMessage(message);
-                setTimeout(() => {
-                    setMessage(null);
-                    callbackAfterSuccess();
-                }, constants.TIMEOUT_DELAY);
-            } else {
+            if (message === null) {
                 setIsLoading(false);
+            } else {
+                if (message) {
+                    setMessage(message);
+                    setTimeout(() => {
+                        setMessage(null);
+                        callbackAfterSuccess();
+                    }, constants.TIMEOUT_DELAY);
+                } else {
+                    callbackAfterSuccess();
+                }
             }
         }
     };

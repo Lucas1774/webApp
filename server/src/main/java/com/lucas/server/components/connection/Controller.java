@@ -130,7 +130,7 @@ public class Controller {
         return this.handleRequest(() -> {
             dao.updateProductQuantity(data.getId(), data.getQuantity(),
                     this.retrieveUsername(request.getCookies()));
-            return "Product " + data.getName() + " updated";
+            return "";
         });
     }
 
