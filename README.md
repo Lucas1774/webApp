@@ -118,10 +118,10 @@ The next are notes to myself in case I forget my own workflows.
 - The idea is to not clutter the git history with changes over bundled files, that's why it is very important to <u>make sure the deploy commit only contains build script-generated changes</u>
 
 ### Deploy back-end
+- For Azure VM, there's simply a `server/deploy.sh` script. Otherwise...
 - In `master` branch, run `server/build.sh`. It will use `prod` configuration
 - Upload `server.jar` with FTP
-- If using Azure web server, restart it.
-- If using naked app in VM, connect via ssh with -i argument to ssh credentials, kill server with `ps aux | grep java` and reboot it in the background with `nohup java -jar server.jar > output.log 2>&1 &`
+- Restart web server.
 
 ### Deploy database schema
 - Connect to the database somewhere (VSCode client, SSMS, MySQL workbench, Azure client)
