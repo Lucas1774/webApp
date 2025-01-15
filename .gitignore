@@ -22,4 +22,5 @@ target/
 
 # misc
 .vscode/
+.idea/
 source.json

@@ -1,22 +1,21 @@
 package com.lucas.server.components.connection;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.lucas.server.components.model.Category;
+import com.lucas.server.components.model.ShoppingItem;
+import com.lucas.server.components.sudoku.Sudoku;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.lucas.server.components.model.Category;
-import com.lucas.server.components.model.ShoppingItem;
-import com.lucas.server.components.sudoku.Sudoku;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class DAO {
 
-    private NamedParameterJdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate jdbcTemplate;
 
     public DAO(NamedParameterJdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -115,10 +114,9 @@ public class DAO {
     }
 
     @Transactional
-    public void updateProduct(int id, String productName, Optional<Object> categoryId, String categoryName)
+    public void updateProduct(int id, String productName, Integer categoryId, String categoryName)
             throws DataAccessException {
-        Integer categoryIdInt;
-        if (!categoryId.isPresent()) {
+        if (null == categoryId) {
             String maxOrderSql = "SELECT MAX(category_order) FROM categories";
             MapSqlParameterSource parameters = new MapSqlParameterSource();
             Integer maxOrder = jdbcTemplate.queryForObject(maxOrderSql, parameters, Integer.class);
@@ -128,16 +126,14 @@ public class DAO {
             parameters.addValue("category", categoryName);
             parameters.addValue("order", newOrder);
             this.jdbcTemplate.update(insertCategorySql, parameters);
-            categoryIdInt = this.jdbcTemplate.queryForObject(getCategoryIdSql, parameters, Integer.class);
-        } else {
-            categoryIdInt = (Integer) categoryId.get();
+            categoryId = this.jdbcTemplate.queryForObject(getCategoryIdSql, parameters, Integer.class);
         }
         String updateProductSql = "UPDATE products SET name = :productName, category_id = :categoryId "
                 + "WHERE id = :id";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.addValue("id", id);
         parameters.addValue("productName", productName);
-        parameters.addValue("categoryId", categoryIdInt);
+        parameters.addValue("categoryId", categoryId);
         this.jdbcTemplate.update(updateProductSql, parameters);
     }
 

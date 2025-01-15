@@ -1,22 +1,5 @@
 package com.lucas.server.components.connection;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataAccessException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.components.calculator.Solver;
 import com.lucas.server.components.model.Category;
@@ -24,25 +7,38 @@ import com.lucas.server.components.model.ShoppingItem;
 import com.lucas.server.components.security.JwtUtil;
 import com.lucas.server.components.sudoku.Generator;
 import com.lucas.server.components.sudoku.Sudoku;
-
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.Callable;
 
 @RestController
 @RequestMapping("/api")
 public class Controller {
-    private JwtUtil jwtUtil;
-    private DAO dao;
-    private Generator generator;
-    private Solver solver;
-    private SudokuParser sudokuParser;
-    private boolean secure;
+    private final JwtUtil jwtUtil;
+    private final DAO dao;
+    private final Generator generator;
+    private final Solver solver;
+    private final SudokuParser sudokuParser;
+    private final boolean secure;
     private static final String ADMIN = "admin";
     private static final String DEFAULT = "default";
+    private static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
+    private final ObjectMapper objectMapper;
 
-    public Controller(JwtUtil jwtUtil, DAO dao, Generator generator, Solver solver, SudokuParser sudokuParser,
-            @Value("${spring.security.jwt.secure}") boolean secure) {
+    public Controller(ObjectMapper objectMapper, JwtUtil jwtUtil, DAO dao, Generator generator, Solver solver, SudokuParser sudokuParser,
+                      @Value("${spring.security.jwt.secure}") boolean secure) {
+        this.objectMapper = objectMapper;
         this.dao = dao;
         this.generator = generator;
         this.solver = solver;
@@ -57,8 +53,9 @@ public class Controller {
         try {
             correctPassword = dao.getPassword(ADMIN);
         } catch (DataAccessException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            String message = e.getMessage();
+            LOGGER.error(message);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
         }
         if (!correctPassword.equals(password.replace("\"", ""))) {
             return ResponseEntity.ok().body("Wrong password. Continuing as guest");
@@ -89,7 +86,7 @@ public class Controller {
         return this.handleRequest(() -> {
             List<ShoppingItem> items = dao
                     .getShoppingItems(this.retrieveUsername(request.getCookies()));
-            return new ObjectMapper().writeValueAsString(items);
+            return this.objectMapper.writeValueAsString(items);
         });
     }
 
@@ -97,7 +94,7 @@ public class Controller {
     public ResponseEntity<String> getPossibleCategories() {
         return this.handleRequest(() -> {
             List<Category> categories = dao.getPossibleCategories();
-            return new ObjectMapper().writeValueAsString(categories);
+            return this.objectMapper.writeValueAsString(categories);
         });
     }
 
@@ -115,7 +112,7 @@ public class Controller {
             if (ADMIN.equals(this.retrieveUsername(request.getCookies()))) {
                 dao.updateProduct((data.getId()),
                         data.getName(),
-                        Optional.ofNullable(data.getCategoryId()),
+                        data.getCategoryId(),
                         data.getCategory());
                 return "Product updated";
             } else {
@@ -126,7 +123,7 @@ public class Controller {
 
     @PostMapping("/update-product-quantity")
     public ResponseEntity<String> updateProductQuantity(HttpServletRequest request,
-            @RequestBody ShoppingItem data) {
+                                                        @RequestBody ShoppingItem data) {
         return this.handleRequest(() -> {
             dao.updateProductQuantity(data.getId(), data.getQuantity(),
                     this.retrieveUsername(request.getCookies()));
@@ -181,7 +178,7 @@ public class Controller {
 
     @GetMapping("/ans")
     public ResponseEntity<String> get() {
-        return this.handleRequest(() -> dao.get());
+        return this.handleRequest(dao::get);
     }
 
     @PostMapping("/upload/sudokus")
@@ -195,7 +192,7 @@ public class Controller {
                             Sudoku copy = Sudoku.withValues(s.get());
                             return s.isValid(-1) && copy.solveWithTimeout();
                         })
-                        .collect(Collectors.toList());
+                        .toList();
                 if (!sudokus.isEmpty()) {
                     dao.insertSudokus(sudokus);
                     return "1";
@@ -228,43 +225,38 @@ public class Controller {
         int[] values = Sudoku.deserialize(sudoku);
         if (0 == values.length) {
             return "Invalid sudoku";
-        } else {
-            Sudoku s = Sudoku.withValues(values);
-            if (!s.isValid(-1)) {
-                return "Sudoku might have more than one solution";
-            } else {
-                if (!s.solveWithTimeout()) {
-                    return "Unsolvable sudoku";
-                } else {
-                    return s.serialize();
-                }
-            }
         }
+        Sudoku s = Sudoku.withValues(values);
+        if (!s.isValid(-1)) {
+            return "Sudoku might have more than one solution";
+        }
+        if (!s.solveWithTimeout()) {
+            return "Unsolvable sudoku";
+        }
+        return s.serialize();
     }
 
     @GetMapping("/check/sudoku")
-    public ResponseEntity<String> checkSudoku(@RequestParam String initialSudoku, @RequestParam String currentSudoku) {
+    public ResponseEntity<String> checkSudoku(@RequestParam String initialSudoku, @RequestParam String
+            currentSudoku) {
         return this.handleRequest(() -> {
             int[] values = Sudoku.deserialize(initialSudoku);
-            Sudoku s;
-            s = Sudoku.withValues(values);
+            Sudoku s = Sudoku.withValues(values);
             if (!s.isValid(-1)) {
                 return "Sudoku might have more than one solution";
-            } else {
-                if (!s.solveWithTimeout()) {
-                    return "Unsolvable sudoku";
-                } else {
-                    String serialized = s.serialize().replace("\"", "");
-                    String solvable = "1";
-                    for (int i = 0; i < Sudoku.NUMBER_OF_CELLS; i++) {
-                        if (currentSudoku.charAt(i) != '0' && serialized.charAt(i) != currentSudoku.charAt(i)) {
-                            solvable = "0";
-                            break;
-                        }
-                    }
-                    return solvable;
+            }
+            if (!s.solveWithTimeout()) {
+                return "Unsolvable sudoku";
+            }
+            String serialized = s.serialize().replace("\"", "");
+            String solvable = "1";
+            for (int i = 0; i < Sudoku.NUMBER_OF_CELLS; i++) {
+                if (currentSudoku.charAt(i) != '0' && serialized.charAt(i) != currentSudoku.charAt(i)) {
+                    solvable = "0";
+                    break;
                 }
             }
+            return solvable;
         });
     }
 
@@ -272,8 +264,9 @@ public class Controller {
         try {
             return ResponseEntity.ok(action.call());
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            String message = e.getMessage();
+            LOGGER.error(message);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
         }
     }
 

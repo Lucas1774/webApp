@@ -7,7 +7,7 @@ import java.util.stream.IntStream;
 
 public class Sudoku {
     public static final int SIZE = 9;
-    protected static final int[] DIGITS = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    protected static final int[] DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     public static final int NUMBER_OF_CELLS = 81;
     private int[] rawData = new int[NUMBER_OF_CELLS];
 
@@ -89,7 +89,7 @@ public class Sudoku {
      * even trivially-placed numbers
      * Likewise, keeping count of digits attempted to place is slower than checking
      * all 9
-     * 
+     *
      * @param maxRisk forces the program to come back if filling a number doesn't
      *                clear others
      */

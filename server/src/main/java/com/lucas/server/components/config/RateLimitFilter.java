@@ -1,5 +1,11 @@
 package com.lucas.server.components.config;
 
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -7,20 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
-
-import jakarta.servlet.Filter;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 @Component
 public class RateLimitFilter implements Filter {
-
     private static final int MAX_REQUESTS_PER_SECOND = 5;
     private static final Map<String, List<Long>> requestTimestamps = new ConcurrentHashMap<>();
 
