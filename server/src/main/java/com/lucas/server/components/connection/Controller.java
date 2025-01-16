@@ -1,9 +1,11 @@
 package com.lucas.server.components.connection;
 
+import com.auth0.jwt.JWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.components.calculator.Solver;
 import com.lucas.server.components.model.Category;
 import com.lucas.server.components.model.ShoppingItem;
+import com.lucas.server.components.model.User;
 import com.lucas.server.components.security.JwtUtil;
 import com.lucas.server.components.sudoku.Generator;
 import com.lucas.server.components.sudoku.Sudoku;
@@ -18,7 +20,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.Callable;
 
@@ -31,12 +35,11 @@ public class Controller {
     private final Solver solver;
     private final SudokuParser sudokuParser;
     private final boolean secure;
-    private static final String ADMIN = "admin";
-    private static final String DEFAULT = "default";
     private static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
     private final ObjectMapper objectMapper;
 
-    public Controller(ObjectMapper objectMapper, JwtUtil jwtUtil, DAO dao, Generator generator, Solver solver, SudokuParser sudokuParser,
+    public Controller(ObjectMapper objectMapper, JwtUtil jwtUtil, DAO dao, Generator generator, Solver solver,
+                      SudokuParser sudokuParser,
                       @Value("${spring.security.jwt.secure}") boolean secure) {
         this.objectMapper = objectMapper;
         this.dao = dao;
@@ -48,19 +51,20 @@ public class Controller {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> handleLogin(@RequestBody String password, HttpServletResponse response) {
-        String correctPassword;
+    public ResponseEntity<String> handleLogin(@RequestBody User user, HttpServletResponse response) {
+        Optional<String> correctPassword;
+        String username = user.getUsername();
         try {
-            correctPassword = dao.getPassword(ADMIN);
+            correctPassword = dao.getPassword(username);
         } catch (DataAccessException e) {
             String message = e.getMessage();
             LOGGER.error(message);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
         }
-        if (!correctPassword.equals(password.replace("\"", ""))) {
-            return ResponseEntity.ok().body("Wrong password. Continuing as guest");
+        if (correctPassword.isEmpty() || !correctPassword.get().equals(user.getPassword().replace("\"", ""))) {
+            return ResponseEntity.ok().body("Wrong credentials. Continuing as guest");
         } else {
-            String token = jwtUtil.generateToken();
+            String token = jwtUtil.generateToken(username);
             Cookie cookie = new Cookie("authToken", token);
             cookie.setHttpOnly(true);
             cookie.setPath("/");
@@ -70,13 +74,13 @@ public class Controller {
                 cookie.setAttribute("SameSite", "None");
             }
             response.addCookie(cookie);
-            return ResponseEntity.ok("Granted admin access");
+            return ResponseEntity.ok("Granted access");
         }
     }
 
     @GetMapping("/check-auth")
     public ResponseEntity<String> checkAuth(HttpServletRequest request) {
-        return this.handleRequest(() -> this.retrieveAuthCookie(request.getCookies()) != null
+        return this.handleRequest(() -> this.retrieveAuthCookie(request.getCookies()).isPresent()
                 ? "1"
                 : "Not authenticated");
     }
@@ -109,7 +113,7 @@ public class Controller {
     @PostMapping("/update-product")
     public ResponseEntity<String> updateProduct(HttpServletRequest request, @RequestBody ShoppingItem data) {
         return this.handleRequest(() -> {
-            if (ADMIN.equals(this.retrieveUsername(request.getCookies()))) {
+            if (User.ADMIN.equals(this.retrieveUsername(request.getCookies()))) {
                 dao.updateProduct((data.getId()),
                         data.getName(),
                         data.getCategoryId(),
@@ -150,7 +154,7 @@ public class Controller {
     @PostMapping("update-categories")
     public ResponseEntity<String> updateCategories(HttpServletRequest request, @RequestBody List<Category> categories) {
         return this.handleRequest(() -> {
-            if (ADMIN.equals(this.retrieveUsername(request.getCookies()))) {
+            if (User.ADMIN.equals(this.retrieveUsername(request.getCookies()))) {
                 dao.updateCategoryOrders(categories);
                 return "Categories updated";
             } else {
@@ -237,8 +241,7 @@ public class Controller {
     }
 
     @GetMapping("/check/sudoku")
-    public ResponseEntity<String> checkSudoku(@RequestParam String initialSudoku, @RequestParam String
-            currentSudoku) {
+    public ResponseEntity<String> checkSudoku(@RequestParam String initialSudoku, @RequestParam String currentSudoku) {
         return this.handleRequest(() -> {
             int[] values = Sudoku.deserialize(initialSudoku);
             Sudoku s = Sudoku.withValues(values);
@@ -270,18 +273,20 @@ public class Controller {
         }
     }
 
-    private String retrieveAuthCookie(Cookie[] cookies) {
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("authToken".equals(cookie.getName()) && jwtUtil.isTokenValid(cookie.getValue())) {
-                    return cookie.getValue();
-                }
-            }
+    private Optional<String> retrieveAuthCookie(Cookie[] cookies) {
+        if (cookies == null) {
+            return Optional.empty();
         }
-        return null;
+        return Arrays.stream(cookies)
+                .filter(cookie -> "authToken".equals(cookie.getName()) && jwtUtil.isTokenValid(cookie.getValue()))
+                .map(Cookie::getValue)
+                .findFirst();
     }
 
     private String retrieveUsername(Cookie[] cookies) {
-        return this.retrieveAuthCookie(cookies) != null ? ADMIN : DEFAULT;
+        return retrieveAuthCookie(cookies)
+                .map(jwt -> JWT.decode(jwt).getSubject())
+                .orElse(User.DEFAULT);
     }
+
 }

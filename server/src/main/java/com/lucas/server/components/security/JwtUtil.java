@@ -18,8 +18,9 @@ public class JwtUtil {
         this.verifier = JWT.require(this.algorithm).build();
     }
 
-    public String generateToken() {
+    public String generateToken(String userName) {
         return JWT.create()
+                .withSubject(userName)
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 365))
                 .sign(algorithm);
