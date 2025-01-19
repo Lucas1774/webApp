@@ -33,7 +33,7 @@ ssh "$VM_URL" "
 
 echo "Starting $OUTPUT_FILE on the VM..."
 ssh "$VM_URL" "
-    sudo nohup java -jar $OUTPUT_FILE > /dev/null 2>&1 &
+    sudo nohup java -jar $OUTPUT_FILE > server.out 2>&1 &
     echo 'Server started successfully!'
 "
 if [ $? -ne 0 ]; then
